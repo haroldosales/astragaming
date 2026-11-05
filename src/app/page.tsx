@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import initialDraftData from "../../public/draft-defaults.json";
@@ -10,11 +11,13 @@ type Category = {
   id: string;
   name: string;
   role: Role;
+  iconUrl: string;
   description: string;
   active: boolean;
 };
 
-type CategoryDraft = Pick<Category, "name" | "role" | "description">;
+type StoredCategory = Omit<Category, "iconUrl"> & { iconUrl?: unknown };
+type CategoryDraft = Pick<Category, "name" | "role" | "iconUrl" | "description">;
 
 function Monogram({ label, className = "" }: { label: string; className?: string }) {
   return <span className={`monogram ${className}`} aria-hidden="true">{label}</span>;
@@ -43,28 +46,32 @@ type DraftOverview = {
   currentTurnIndex: number;
 };
 
-const roleDetails: Record<Role, { name: string; mark: string; hint: string }> = {
+const rivalSkinsRoleIcons = "https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons";
+const roleDetails: Record<Role, { name: string; mark: string; iconUrl: string; hint: string }> = {
   duelist: {
     name: "Duelista",
     mark: "DU",
+    iconUrl: `${rivalSkinsRoleIcons}/Duelist.png`,
     hint: "Dano e pressão na linha de frente.",
   },
   strategist: {
     name: "Estrategista",
     mark: "ES",
+    iconUrl: `${rivalSkinsRoleIcons}/Strategist.png`,
     hint: "Suporte tático e sustentação da equipe.",
   },
   vanguard: {
     name: "Vanguarda",
     mark: "VA",
+    iconUrl: `${rivalSkinsRoleIcons}/Vanguard.png`,
     hint: "Resistência e controle de espaço.",
   },
 };
 
 const initialCategories: Category[] = [
-  { id: "duelistas", name: "Duelistas", role: "duelist", description: "Dano e pressão na linha de frente.", active: true },
-  { id: "estrategistas", name: "Estrategistas", role: "strategist", description: "Suporte tático e sustentação da equipe.", active: true },
-  { id: "vanguardas", name: "Vanguardas", role: "vanguard", description: "Resistência e controle de espaço.", active: true },
+  { id: "duelistas", name: "Duelistas", role: "duelist", iconUrl: roleDetails.duelist.iconUrl, description: "Dano e pressão na linha de frente.", active: true },
+  { id: "estrategistas", name: "Estrategistas", role: "strategist", iconUrl: roleDetails.strategist.iconUrl, description: "Suporte tático e sustentação da equipe.", active: true },
+  { id: "vanguardas", name: "Vanguardas", role: "vanguard", iconUrl: roleDetails.vanguard.iconUrl, description: "Resistência e controle de espaço.", active: true },
 ];
 
 const storageKey = "astra-gaming-categories";
@@ -74,16 +81,46 @@ const subscribeHydration = () => () => {};
 const getHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
 
+function isRole(value: unknown): value is Role {
+  return value === "duelist" || value === "strategist" || value === "vanguard";
+}
+
+function isStoredCategory(value: unknown): value is StoredCategory {
+  if (!value || typeof value !== "object") return false;
+  const category = value as Record<string, unknown>;
+  return typeof category.id === "string"
+    && typeof category.name === "string"
+    && isRole(category.role)
+    && typeof category.description === "string"
+    && typeof category.active === "boolean";
+}
+
 function getInitialCategories(): Category[] {
   if (typeof window === "undefined") return initialCategories;
   const stored = window.localStorage.getItem(storageKey);
   if (!stored) return initialCategories;
   try {
-    const parsed = JSON.parse(stored) as Category[];
-    return Array.isArray(parsed) ? parsed : initialCategories;
+    const parsed: unknown = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return initialCategories;
+    return parsed.filter(isStoredCategory).map((category) => ({
+      ...category,
+      iconUrl: isAllowedRoleIconUrl(category.iconUrl) ? category.iconUrl : roleDetails[category.role].iconUrl,
+    }));
   } catch {
     window.localStorage.removeItem(storageKey);
     return initialCategories;
+  }
+}
+
+function isAllowedRoleIconUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:"
+      && url.hostname === "rivalskins.com"
+      && url.pathname.includes("/role-icons/");
+  } catch {
+    return false;
   }
 }
 
@@ -157,7 +194,7 @@ export default function Home() {
 
   const selected = categories.find((category) => category.id === selectedId) ?? categories[0] ?? null;
   const currentDraft = selected
-    ? draft ?? { name: selected.name, role: selected.role, description: selected.description }
+    ? draft ?? { name: selected.name, role: selected.role, iconUrl: selected.iconUrl, description: selected.description }
     : null;
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(search.toLowerCase()),
@@ -181,21 +218,26 @@ export default function Home() {
       id: crypto.randomUUID(),
       name: `Nova categoria ${categories.length + 1}`,
       role: "duelist",
+      iconUrl: roleDetails.duelist.iconUrl,
       description: roleDetails.duelist.hint,
       active: true,
     };
     setCategories((current) => [...current, category]);
     setSelectedId(category.id);
-    setDraft({ name: category.name, role: category.role, description: category.description });
+    setDraft({ name: category.name, role: category.role, iconUrl: category.iconUrl, description: category.description });
     setSaved(false);
   }
 
   function saveCategory(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected || !currentDraft?.name.trim()) return;
+    if (!isAllowedRoleIconUrl(currentDraft.iconUrl)) {
+      window.alert("Use uma URL HTTPS de imagem da pasta role-icons do RivalSkins.");
+      return;
+    }
     setCategories((current) => current.map((category) =>
       category.id === selected.id
-        ? { ...category, name: currentDraft.name.trim(), description: currentDraft.description.trim(), role: currentDraft.role }
+        ? { ...category, name: currentDraft.name.trim(), description: currentDraft.description.trim(), role: currentDraft.role, iconUrl: currentDraft.iconUrl }
         : category,
     ));
     setDraft({ ...currentDraft, name: currentDraft.name.trim() });
@@ -325,7 +367,10 @@ export default function Home() {
                   return (
                     <div className={`category-row ${selected?.id === category.id ? "selected" : ""}`} key={category.id}>
                       <button className="category-select" onClick={() => selectCategory(category)} aria-pressed={selected?.id === category.id}>
-                        <span className="role-icon" aria-hidden="true">{role.mark}</span>
+                        <span className="role-icon" aria-hidden="true">
+                          <span className="role-icon-fallback">{role.mark}</span>
+                          <Image src={category.iconUrl} alt="" fill unoptimized onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                        </span>
                         <span className="category-copy"><strong>{category.name}</strong><small>{role.name}</small></span>
                         {selected?.id === category.id && <span className="selected-mark">OK</span>}
                       </button>
@@ -351,7 +396,10 @@ export default function Home() {
                   </div>
 
                   <div className="role-preview">
-                    <div className="preview-halo" aria-hidden="true">{roleDetails[currentDraft?.role ?? selected.role].mark}</div>
+                    <div className="preview-halo" aria-hidden="true">
+                      <span className="role-icon-fallback">{roleDetails[currentDraft?.role ?? selected.role].mark}</span>
+                      <Image src={currentDraft?.iconUrl ?? selected.iconUrl} alt="" fill unoptimized onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                    </div>
                     <div><span className="preview-label">ÍCONE DE FUNÇÃO</span><strong>{roleDetails[currentDraft?.role ?? selected.role].name}</strong><small>{roleDetails[currentDraft?.role ?? selected.role].hint}</small></div>
                   </div>
 
@@ -359,9 +407,13 @@ export default function Home() {
                   <input id="category-name" className="text-input" value={currentDraft?.name ?? ""} onChange={(event) => { if (currentDraft) setDraft({ ...currentDraft, name: event.target.value }); setSaved(false); }} maxLength={40} required />
 
                   <label className="field-label" htmlFor="category-role">Função vinculada</label>
-                  <div className="select-wrap"><select id="category-role" className="text-input" value={currentDraft?.role ?? "duelist"} onChange={(event) => { if (currentDraft) setDraft({ ...currentDraft, role: event.target.value as Role }); setSaved(false); }}>
+                  <div className="select-wrap"><select id="category-role" className="text-input" value={currentDraft?.role ?? "duelist"} onChange={(event) => { if (currentDraft && isRole(event.target.value)) setDraft({ ...currentDraft, role: event.target.value, iconUrl: roleDetails[event.target.value].iconUrl }); setSaved(false); }}>
                     {Object.entries(roleDetails).map(([key, role]) => <option key={key} value={key}>{role.name}</option>)}
                   </select><span className="select-chevron" aria-hidden="true">V</span></div>
+
+                  <label className="field-label" htmlFor="category-icon-url">URL do ícone</label>
+                  <input id="category-icon-url" className="text-input" type="url" value={currentDraft?.iconUrl ?? ""} onChange={(event) => { if (currentDraft) setDraft({ ...currentDraft, iconUrl: event.target.value }); setSaved(false); }} placeholder="https://rivalskins.com/.../role-icons/..." required />
+                  <small className="icon-url-hint">Use imagens HTTPS da pasta <code>role-icons</code>. <a href="https://rivalskins.com/assets/role-icons/" target="_blank" rel="noreferrer">Ver ícones de função</a></small>
 
                   <label className="field-label" htmlFor="category-description">Descrição</label>
                   <textarea id="category-description" className="text-input textarea" value={currentDraft?.description ?? ""} onChange={(event) => { if (currentDraft) setDraft({ ...currentDraft, description: event.target.value }); setSaved(false); }} maxLength={120} rows={3} />
