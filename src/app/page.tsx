@@ -42,6 +42,7 @@ type DraftOverview = {
   project: DraftProject;
   availablePlayers: string[];
   teams: DraftTeam[];
+  playerRoles?: Record<string, Role>;
   draftOrder: number[];
   currentTurnIndex: number;
 };
@@ -142,6 +143,10 @@ function isDraftOverview(value: unknown): value is DraftOverview {
         && typeof team.captain === "string"
         && Array.isArray(team.players)
         && team.players.every((player) => typeof player === "string"))
+      && (draft.playerRoles === undefined || (draft.playerRoles !== null
+        && typeof draft.playerRoles === "object"
+        && !Array.isArray(draft.playerRoles)
+        && Object.values(draft.playerRoles).every(isRole)))
       && Array.isArray(draft.draftOrder)
       && Number.isInteger(draft.currentTurnIndex),
   );
@@ -174,7 +179,7 @@ export default function Home() {
         }
         const parsed: unknown = JSON.parse(stored);
         if (!isDraftOverview(parsed)) throw new Error("Os dados salvos do Draft estão inválidos.");
-        setDraftOverview(parsed);
+        setDraftOverview({ ...parsed, playerRoles: parsed.playerRoles ?? {} });
         setHasSavedDraft(true);
         setDraftReadError(false);
       } catch (error) {
@@ -325,13 +330,31 @@ export default function Home() {
                 <p className="draft-overview-message error">Não foi possível ler os dados salvos. Abra o Draft para verificar o armazenamento local.</p>
               ) : (
                 <div className="draft-team-list">
-                  {draftOverview.teams.slice(0, 4).map((team) => (
-                    <div className="draft-team-item" key={team.id}>
-                      <span className="draft-team-icon" aria-hidden="true">{team.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span>
-                      <span><strong>{team.name}</strong><small>Capitã(o): {team.captain}</small></span>
-                      <b>{team.players.length} {team.players.length === 1 ? "pick" : "picks"}</b>
-                    </div>
-                  ))}
+                  {draftOverview.teams.slice(0, 4).map((team) => {
+                    const roleCounts = (Object.keys(roleDetails) as Role[])
+                      .map((role) => ({
+                        role,
+                        count: team.players.filter((player) => draftOverview.playerRoles?.[player] === role).length,
+                      }))
+                      .filter(({ count }) => count > 0);
+                    return (
+                      <div className="draft-team-item" key={team.id}>
+                        <span className="draft-team-icon" aria-hidden="true">{team.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span>
+                        <span><strong>{team.name}</strong><small>Capitã(o): {team.captain}</small></span>
+                        <span className="draft-team-summary">
+                          <span className="draft-team-role-counts">
+                            {roleCounts.map(({ role, count }) => (
+                              <span key={role} role="img" title={`${roleDetails[role].name}: ${count}`} aria-label={`${roleDetails[role].name}: ${count}`}>
+                                <Image src={roleDetails[role].iconUrl} alt="" width={14} height={14} unoptimized />
+                                <small>{count}</small>
+                              </span>
+                            ))}
+                          </span>
+                          <b>{team.players.length} {team.players.length === 1 ? "pick" : "picks"}</b>
+                        </span>
+                      </div>
+                    );
+                  })}
                   {draftOverview.teams.length > 4 && <p className="draft-team-more">+ {draftOverview.teams.length - 4} equipes. Veja o roster completo no Draft.</p>}
                   {draftOverview.teams.length === 0 && <p className="draft-overview-message">Nenhuma equipe cadastrada. Adicione equipes no Draft.</p>}
                 </div>

@@ -95,7 +95,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .draft-team-item > span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
 .draft-team-item strong { overflow: hidden; color: #e9e5ed; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .draft-team-item small { overflow: hidden; color: #87818f; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
-.draft-team-item > b { margin-left: auto; color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 8px; font-weight: 500; white-space: nowrap; }
+.draft-team-summary { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.draft-team-role-counts { display: flex; align-items: center; gap: 5px; }
+.draft-team-role-counts > span { display: inline-flex; align-items: center; gap: 2px; color: #b8b2bf; }
+.draft-team-role-counts img { width: 14px; height: 14px; object-fit: contain; }
+.draft-team-role-counts small { color: #b8b2bf; font-family: "IBM Plex Mono", monospace; font-size: 8px; }
+.draft-team-summary > b { color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 8px; font-weight: 500; white-space: nowrap; }
 .draft-team-more, .draft-overview-message { grid-column: 1 / -1; margin: 4px 0 0; color: #827c89; font-size: 9px; }
 .draft-overview-message.error { color: #ff8296; }
 .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 25px; }

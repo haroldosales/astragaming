@@ -85,6 +85,7 @@
     "SZANMAS7",
     "TENEBRAMH"
   ],
+  "playerRoles": {},
   "teams": [
     { "id": 1, "captain": "NYMPHELYSIA", "name": "TEAM NYMPHELYSIA", "players": [] },
     { "id": 2, "captain": "IAMMARINADINIZ", "name": "TEAM IAMMARINADINIZ", "players": [] },

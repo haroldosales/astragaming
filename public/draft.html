@@ -118,6 +118,43 @@
             height: 100%;
             object-fit: contain;
         }
+        .role-choice {
+            min-height: 112px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            padding: .75rem .4rem;
+            border: 1px solid #373342;
+            border-radius: .375rem;
+            background: #09080e;
+            color: #d1d5db;
+            font-size: .7rem;
+            font-weight: 700;
+            transition: border-color .15s, background-color .15s, color .15s;
+        }
+        .role-choice:hover, .role-choice.is-selected {
+            border-color: rgb(var(--brand-primary-rgb));
+            background: rgb(var(--brand-primary-rgb) / 12%);
+            color: white;
+        }
+        .role-choice img { width: 44px; height: 44px; object-fit: contain; }
+        .player-role-control {
+            width: 2rem;
+            height: 2rem;
+            flex: 0 0 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .15rem;
+            padding: .2rem;
+            border-radius: .25rem;
+            font-size: .55rem;
+            font-weight: 700;
+        }
+        .player-role-control img { width: 1.25rem; height: 1.25rem; object-fit: contain; }
+        .player-role-control .draft-mark { min-width: 1.2rem; height: 1.2rem; font-size: .5rem; }
     </style>
 </head>
 <body class="bg-brand-darkBg text-gray-100 font-body min-h-screen flex flex-col antialiased selection:bg-brand-pink selection:text-white">
@@ -210,6 +247,33 @@
                 </div>
             </div>
         </form>
+    </dialog>
+
+    <dialog id="playerRoleDialog" class="w-[min(94vw,460px)] rounded-lg border border-gray-700 bg-brand-cardBg p-0 text-gray-100 shadow-2xl backdrop:bg-black/70">
+        <div class="space-y-4 p-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="font-mono text-[10px] tracking-widest text-brand-pink">FUNÇÃO DO PARTICIPANTE</p>
+                    <h2 id="playerRoleTitle" class="mt-1 font-gamer text-lg font-bold">Escolha uma função</h2>
+                </div>
+                <button type="button" onclick="closePlayerRoleDialog()" class="rounded p-1 text-gray-400 hover:text-white" aria-label="Fechar funções"><span class="draft-mark">FE</span></button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" class="role-choice" data-role="duelist" onclick="setPlayerRole('duelist')" aria-label="Atribuir função Duelista">
+                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Duelist.png" alt="">
+                    <span>Duelista</span>
+                </button>
+                <button type="button" class="role-choice" data-role="strategist" onclick="setPlayerRole('strategist')" aria-label="Atribuir função Estrategista">
+                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Strategist.png" alt="">
+                    <span>Estrategista</span>
+                </button>
+                <button type="button" class="role-choice" data-role="vanguard" onclick="setPlayerRole('vanguard')" aria-label="Atribuir função Vanguarda">
+                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Vanguard.png" alt="">
+                    <span>Vanguarda</span>
+                </button>
+            </div>
+            <button type="button" onclick="setPlayerRole(null)" class="w-full rounded border border-gray-700 px-3 py-2 text-xs text-gray-300 hover:bg-gray-800">Remover função</button>
+        </div>
     </dialog>
 
     <!-- CORPO PRINCIPAL -->
@@ -346,11 +410,30 @@
         const DRAFT_STORAGE_KEY = 'astra-gaming-draft';
         let project = null;
         let availablePlayers = [];
+        let playerRoles = Object.create(null);
         let teams = [];
         let selectedPlayerNick = null;
         let draftOrder = [];
         let currentTurnIndex = -1;
         let editingTeamIndex = -1;
+        let editingPlayerRoleNick = null;
+        const roleDetails = {
+            duelist: {
+                name: 'Duelista',
+                mark: 'DU',
+                iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Duelist.png'
+            },
+            strategist: {
+                name: 'Estrategista',
+                mark: 'ES',
+                iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Strategist.png'
+            },
+            vanguard: {
+                name: 'Vanguarda',
+                mark: 'VA',
+                iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Vanguard.png'
+            }
+        };
 
         function escapeHTML(value) {
             return String(value).replace(/[&<>"']/g, character => ({
@@ -372,6 +455,34 @@
             return [...availablePlayers, ...teams.flatMap(team => team.players)];
         }
 
+        function isPlayerRole(value) {
+            return Object.hasOwn(roleDetails, value);
+        }
+
+        function normalizePlayerRoles(value) {
+            const roles = Object.create(null);
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return roles;
+            const playerNicks = new Set(getAllPlayerNicks());
+            Object.entries(value).forEach(([nick, role]) => {
+                if (playerNicks.has(nick) && isPlayerRole(role)) roles[nick] = role;
+            });
+            return roles;
+        }
+
+        function playerRoleControlContentsHtml(nick) {
+            const role = playerRoles[nick];
+            if (!isPlayerRole(role)) {
+                return '<span class="draft-mark">FU</span>';
+            }
+            const details = roleDetails[role];
+            return `<img src="${details.iconUrl}" alt=""><span>${details.mark}</span>`;
+        }
+
+        function playerRoleControlTitle(nick) {
+            const role = playerRoles[nick];
+            return isPlayerRole(role) ? `Alterar função de ${nick}: ${roleDetails[role].name}` : `Atribuir função para ${nick}`;
+        }
+
         function isProjectValid(value) {
             return value && typeof value.name === 'string' && value.name.trim()
                 && typeof value.tournament === 'string' && value.tournament.trim()
@@ -391,6 +502,9 @@
                     && Array.isArray(team.players) && team.players.every(player => typeof player === 'string'))
                 && Array.isArray(value.draftOrder)
                 && value.draftOrder.every(index => Number.isInteger(index) && index >= 0 && index < value.teams.length)
+                && (value.playerRoles === undefined || (value.playerRoles && typeof value.playerRoles === 'object'
+                    && !Array.isArray(value.playerRoles)
+                    && Object.values(value.playerRoles).every(isPlayerRole)))
                 && Number.isInteger(value.currentTurnIndex)
                 && value.currentTurnIndex >= -1
                 && (value.draftOrder.length === 0 || value.currentTurnIndex < value.draftOrder.length);
@@ -425,6 +539,7 @@
                 localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
                     project,
                     availablePlayers,
+                    playerRoles,
                     teams,
                     draftOrder,
                     currentTurnIndex
@@ -455,13 +570,16 @@
                     const saved = JSON.parse(stored);
                     if (!isDraftStateValid(saved)) throw new Error('Os dados salvos não correspondem ao formato esperado.');
                     ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = saved);
+                    playerRoles = normalizePlayerRoles(saved.playerRoles);
                 } catch (error) {
                     console.error('Os dados salvos do Draft não puderam ser carregados.', error);
                     alert('Os dados salvos do Draft estão inválidos. Os dados iniciais serão carregados.');
                     ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = defaults);
+                    playerRoles = normalizePlayerRoles(defaults.playerRoles);
                 }
             } else {
                 ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = defaults);
+                playerRoles = normalizePlayerRoles(defaults.playerRoles);
             }
 
             applyProjectDetails();
@@ -527,6 +645,39 @@
         function closeTeamSettings() {
             document.getElementById('teamSettingsDialog').close();
             editingTeamIndex = -1;
+        }
+
+        function openPlayerRoleDialog(nick) {
+            if (!getAllPlayerNicks().includes(nick)) return;
+            editingPlayerRoleNick = nick;
+            document.getElementById('playerRoleTitle').innerText = `Função de ${nick}`;
+            document.querySelectorAll('.role-choice').forEach(button => {
+                const isSelected = button.dataset.role === playerRoles[nick];
+                button.classList.toggle('is-selected', isSelected);
+                button.setAttribute('aria-pressed', String(isSelected));
+            });
+            document.getElementById('playerRoleDialog').showModal();
+        }
+
+        function openPlayerRoleDialogForTeam(teamIndex, playerIndex) {
+            const nick = teams[teamIndex]?.players[playerIndex];
+            if (nick) openPlayerRoleDialog(nick);
+        }
+
+        function closePlayerRoleDialog() {
+            editingPlayerRoleNick = null;
+            document.getElementById('playerRoleDialog').close();
+        }
+
+        function setPlayerRole(role) {
+            const nick = editingPlayerRoleNick;
+            if (!nick || !getAllPlayerNicks().includes(nick)) return;
+            if (role !== null && !isPlayerRole(role)) return;
+            if (role === null) delete playerRoles[nick];
+            else playerRoles[nick] = role;
+            closePlayerRoleDialog();
+            saveDraftState();
+            renderDraft();
         }
 
         function saveTeamSettings(event) {
@@ -611,6 +762,9 @@
                             <span class="truncate">${escapeHTML(nick)}</span>
                         </div>
                         <div class="flex items-center gap-0.5 shrink-0">
+                            <button type="button" class="player-role-control text-gray-400 hover:text-white p-1" title="${escapeHTML(playerRoleControlTitle(nick))}" aria-label="${escapeHTML(playerRoleControlTitle(nick))}">
+                                ${playerRoleControlContentsHtml(nick)}
+                            </button>
                             <button type="button" class="edit-player text-gray-400 hover:text-white p-1" title="Editar nick ${escapeHTML(nick)}" aria-label="Editar nick ${escapeHTML(nick)}">
                                 <span class="draft-mark">ED</span>
                             </button>
@@ -625,6 +779,10 @@
                     card.querySelector('.edit-player').addEventListener('click', (event) => {
                         event.stopPropagation();
                         editarJogadora(nick);
+                    });
+                    card.querySelector('.player-role-control').addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        openPlayerRoleDialog(nick);
                     });
                     card.querySelector('.delete-player').addEventListener('click', (event) => {
                         event.stopPropagation();
@@ -685,6 +843,10 @@
             teams.forEach(team => {
                 team.players = team.players.map(nick => nick === currentNick ? newNick : nick);
             });
+            if (newNick !== currentNick && Object.hasOwn(playerRoles, currentNick)) {
+                playerRoles[newNick] = playerRoles[currentNick];
+                delete playerRoles[currentNick];
+            }
             if (selectedPlayerNick === currentNick) selectedPlayerNick = newNick;
 
             saveDraftState();
@@ -708,6 +870,7 @@
             teams.forEach(team => {
                 team.players = team.players.filter(player => player !== nick);
             });
+            delete playerRoles[nick];
             if (selectedPlayerNick === nick) selectedPlayerNick = null;
 
             saveDraftState();
@@ -764,6 +927,9 @@
                     slotsHtml += `
                         <div class="flex items-center justify-between bg-brand-darkBg/90 border border-brand-pink/30 hover:border-brand-pink px-2.5 py-1.5 rounded text-xs text-white transition-all">
                             <span class="flex min-w-0 items-center gap-1.5 font-medium"><span class="draft-mark flex-shrink-0">${escapeHTML(getInitials(playerNick))}</span><span class="truncate">${escapeHTML(playerNick)}</span></span>
+                            <button type="button" onclick="openPlayerRoleDialogForTeam(${teamIndex}, ${pIndex})" class="player-role-control text-gray-300 hover:text-white" title="${escapeHTML(playerRoleControlTitle(playerNick))}" aria-label="${escapeHTML(playerRoleControlTitle(playerNick))}">
+                                ${playerRoleControlContentsHtml(playerNick)}
+                            </button>
                             <button onclick="removerDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Remover de volta para lista">
                                 <span class="draft-mark">DEV</span>
                             </button>
