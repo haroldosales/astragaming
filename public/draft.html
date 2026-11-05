@@ -277,6 +277,20 @@
         let draftOrder = [];           // Ordem sorteada dos índices dos times
         let currentTurnIndex = -1;     // Índice do turno atual na draftOrder
 
+        function escapeHTML(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
+        }
+
+        function getAllPlayerNicks() {
+            return [...availablePlayers, ...teams.flatMap(team => team.players)];
+        }
+
         // Inicializar a aplicação quando o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', () => {
             renderPlayersList();
@@ -321,12 +335,28 @@
                     card.innerHTML = `
                         <div class="flex items-center gap-1.5 overflow-hidden">
                             <i class="fa-solid fa-headset text-[10px] ${isSelected ? 'text-white' : 'text-brand-pink'} flex-shrink-0"></i>
-                            <span class="truncate">${nick}</span>
+                            <span class="truncate">${escapeHTML(nick)}</span>
+                        </div>
+                        <div class="flex items-center gap-0.5 shrink-0">
+                            <button type="button" class="edit-player text-gray-400 hover:text-white p-1" title="Editar nick ${escapeHTML(nick)}" aria-label="Editar nick ${escapeHTML(nick)}">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button" class="delete-player text-gray-400 hover:text-red-400 p-1" title="Excluir ${escapeHTML(nick)} do Draft" aria-label="Excluir ${escapeHTML(nick)} do Draft">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                     `;
 
                     // Eventos de Clique
                     card.addEventListener('click', () => handlePlayerSelect(nick));
+                    card.querySelector('.edit-player').addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        editarJogadora(nick);
+                    });
+                    card.querySelector('.delete-player').addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        excluirJogadora(nick);
+                    });
 
                     // Eventos de Drag & Drop
                     card.addEventListener('dragstart', (e) => {
@@ -353,11 +383,51 @@
             const input = document.getElementById('newPlayerInput');
             const nick = input.value.trim().toUpperCase();
             
-            if (nick && !availablePlayers.includes(nick)) {
+            if (nick && !getAllPlayerNicks().some(player => player.toLowerCase() === nick.toLowerCase())) {
                 availablePlayers.unshift(nick);
                 input.value = '';
                 renderPlayersList(document.getElementById('searchInput').value);
+            } else if (nick) {
+                alert('Esse nick já está no Draft.');
             }
+        }
+
+        function editarJogadora(currentNick) {
+            const enteredNick = prompt('Digite o novo nick:', currentNick);
+            if (enteredNick === null) return;
+
+            const newNick = enteredNick.trim().toUpperCase();
+            if (!newNick) {
+                alert('O nick não pode ficar vazio.');
+                return;
+            }
+
+            if (newNick !== currentNick && getAllPlayerNicks().some(nick => nick.toLowerCase() === newNick.toLowerCase())) {
+                alert('Esse nick já está no Draft.');
+                return;
+            }
+
+            availablePlayers = availablePlayers.map(nick => nick === currentNick ? newNick : nick);
+            teams.forEach(team => {
+                team.players = team.players.map(nick => nick === currentNick ? newNick : nick);
+            });
+            if (selectedPlayerNick === currentNick) selectedPlayerNick = newNick;
+
+            renderPlayersList(document.getElementById('searchInput').value);
+            renderTeams();
+        }
+
+        function excluirJogadora(nick) {
+            if (!confirm(`Excluir ${nick} definitivamente do Draft atual?`)) return;
+
+            availablePlayers = availablePlayers.filter(player => player !== nick);
+            teams.forEach(team => {
+                team.players = team.players.filter(player => player !== nick);
+            });
+            if (selectedPlayerNick === nick) selectedPlayerNick = null;
+
+            renderPlayersList(document.getElementById('searchInput').value);
+            renderTeams();
         }
 
         // ----------------------------------------------------
@@ -382,7 +452,7 @@
                             <div class="w-6 h-6 rounded-full ${isCurrentTurn ? 'bg-brand-pink text-white font-black scale-110 neon-border-active' : 'bg-brand-pink/20 border border-brand-pink text-brand-pink font-bold'} flex items-center justify-center text-xs transition-all">
                                 ${draftOrder.length > 0 ? (draftOrder.indexOf(teamIndex) + 1) : (teamIndex + 1)}
                             </div>
-                            <h3 class="font-gamer text-xs sm:text-sm font-bold text-white truncate">${team.name}</h3>
+                            <h3 class="font-gamer text-xs sm:text-sm font-bold text-white truncate">${escapeHTML(team.name)}</h3>
                         </div>
                         ${isCurrentTurn ? '<span class="bg-brand-pink text-white text-[9px] font-gamer font-bold px-2 py-0.5 rounded animate-pulse shadow-lg">PICKING</span>' : ''}
                     </div>
@@ -391,7 +461,7 @@
                     <div class="px-3 py-2 bg-gradient-to-r from-brand-cardBg to-brand-panelBg border-b border-gray-800/80 flex items-center justify-between">
                         <div class="flex items-center gap-2 truncate">
                             <i class="fa-solid fa-crown text-[10px] ${isCurrentTurn ? 'text-brand-pink animate-bounce' : 'text-brand-capGold'}"></i>
-                            <span class="text-xs font-bold text-gray-300 truncate">${team.captain}</span>
+                            <span class="text-xs font-bold text-gray-300 truncate">${escapeHTML(team.captain)}</span>
                         </div>
                         <span class="bg-brand-capGold text-black font-extrabold text-[10px] px-1.5 py-0.5 rounded shadow">CAP</span>
                     </div>
@@ -404,9 +474,15 @@
                 team.players.forEach((playerNick, pIndex) => {
                     slotsHtml += `
                         <div class="flex items-center justify-between bg-brand-darkBg/90 border border-brand-pink/30 hover:border-brand-pink px-2.5 py-1.5 rounded text-xs text-white transition-all">
-                            <span class="font-medium truncate"><i class="fa-solid fa-user text-brand-pink text-[10px] mr-1.5"></i>${playerNick}</span>
+                            <span class="font-medium truncate"><i class="fa-solid fa-user text-brand-pink text-[10px] mr-1.5"></i>${escapeHTML(playerNick)}</span>
                             <button onclick="removerDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Remover de volta para lista">
                                 <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            <button onclick="editarJogadora('${escapeHTML(playerNick)}')" class="text-gray-500 hover:text-white p-1 text-xs" title="Editar nick ${escapeHTML(playerNick)}" aria-label="Editar nick ${escapeHTML(playerNick)}">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="excluirJogadora('${escapeHTML(playerNick)}')" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Excluir ${escapeHTML(playerNick)} do Draft" aria-label="Excluir ${escapeHTML(playerNick)} do Draft">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
                     `;
