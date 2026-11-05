@@ -300,7 +300,7 @@ export default function Home() {
     <div className="app-shell" style={projectTheme}>
       <aside className="sidebar">
         <Link className="brand" href="/" aria-label={`${draftOverview.project.name}, início`}>
-          <span className="brand-mark">AG</span>
+          <span className="brand-mark"><Image src="/AG.png" alt="" width={34} height={34} priority /></span>
           <span className="brand-copy"><strong>{draftOverview.project.name.toUpperCase()}</strong><small>PAINEL DE CONTROLE</small></span>
         </Link>
 
