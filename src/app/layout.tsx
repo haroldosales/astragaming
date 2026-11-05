@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Categorias | Astra Gaming",
-  description: "Gerencie as categorias da Astra Gaming.",
+  title: "Astra Gaming | Painel",
+  description: "Visão geral do torneio, equipes, participantes e categorias da Astra Gaming.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
