@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ExternalLink, Gamepad2, Layers3 } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import initialDraftData from "../../public/draft-defaults.json";
 
@@ -306,8 +307,8 @@ export default function Home() {
 
         <div className="nav-label">GERENCIAMENTO</div>
         <nav className="side-nav" aria-label="Navegação principal">
-          <Link className="nav-item active" href="/" aria-current="page"><Monogram label="CT" />Categorias</Link>
-          <a className="nav-item" href="/draft.html"><Monogram label="DR" />Draft<Monogram label="EXT" className="nav-external" /></a>
+          <Link className="nav-item active" href="/" aria-current="page"><Layers3 className="nav-icon" aria-hidden="true" />Categorias</Link>
+          <a className="nav-item" href="/draft.html"><Gamepad2 className="nav-icon" aria-hidden="true" />Draft<ExternalLink className="nav-external-icon" aria-hidden="true" /></a>
         </nav>
 
         <div className="sidebar-spacer" />

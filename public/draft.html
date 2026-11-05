@@ -187,6 +187,29 @@
         .draft-brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
         .draft-header-actions { gap: .5rem; }
         .draft-button { min-height: 2.5rem; }
+        .draft-ui-icon { width: 1.05rem; height: 1.05rem; flex: 0 0 1.05rem; }
+        .draft-header .draft-button { padding-inline: .8rem; }
+        .header-settings-menu { position: relative; }
+        .header-settings-menu > summary {
+            display: flex;
+            min-height: 2.5rem;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            padding: .5rem .75rem;
+            border: 1px solid #373342;
+            border-radius: .35rem;
+            background: #1c1a23;
+            color: #d3cfda;
+            cursor: pointer;
+            font-size: .72rem;
+            font-weight: 700;
+            list-style: none;
+        }
+        .header-settings-menu > summary::-webkit-details-marker { display: none; }
+        .header-settings-menu > summary:hover, .header-settings-menu[open] > summary { border-color: #514b5a; color: white; }
+        .header-settings-menu > summary svg { width: 1rem; height: 1rem; }
+        .header-settings-popover { top: calc(100% + .4rem); width: 12rem; }
         .draft-main { align-items: start; gap: 1rem; }
         .player-sidebar {
             height: min(760px, calc(100vh - 112px));
@@ -329,7 +352,7 @@
             .draft-header { align-items: flex-start; padding-inline: .85rem; }
             .draft-header h1 { font-size: 1rem; }
             .draft-header-actions { justify-content: flex-start; width: 100%; }
-            .draft-header-actions button { min-height: 2.6rem; }
+            .draft-header-actions button, .header-settings-menu > summary { min-height: 2.6rem; }
             .draft-main { padding: .75rem; }
             .player-sidebar { height: 55vh; min-height: 320px; }
             .player-grid { grid-template-columns: minmax(0, 1fr) !important; }
@@ -364,17 +387,21 @@
             </div>
 
             <button id="btnSortear" onclick="sortearOrdem()" class="draft-button bg-brand-pink hover:bg-brand-pinkDark text-white font-gamer font-bold px-4 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 shadow-md flex items-center gap-2">
-                <span class="draft-mark border-white/30 bg-white/10 text-white">SO</span> SORTEAR ORDEM
+                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M4 7h16"/><path d="m8 21-4-4 4-4"/><path d="M20 17H4"/></svg> SORTEAR ORDEM
             </button>
             <button id="btnNextTurn" onclick="proximoTurno()" class="draft-button bg-brand-accent hover:brightness-90 text-white font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 flex items-center gap-1.5">
-                <span class="draft-mark border-white/30 bg-white/10 text-white">PR</span> <span id="nextTurnButtonLabel">SORTEAR E INICIAR</span>
+                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> <span id="nextTurnButtonLabel">SORTEAR E INICIAR</span>
             </button>
-            <button onclick="openProjectSettings()" aria-label="Editar dados e cores do projeto" class="draft-button bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Editar dados e cores do projeto">
-                <span class="draft-mark">PJ</span> <span>PROJETO</span>
-            </button>
-            <button onclick="resetDraft()" aria-label="Limpar picks e manter os dados" class="draft-button bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Limpar picks e manter os dados">
-                <span class="draft-mark">LP</span> <span>LIMPAR</span>
-            </button>
+            <details id="headerSettingsMenu" class="header-settings-menu">
+                <summary aria-label="Abrir menu de configurações" title="Configurações">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.6 2.8-.2-.1a1.7 1.7 0 0 0-1.9.3l-.2.2h-3.2l-.1-.2a1.7 1.7 0 0 0-1.9-.3l-.2.1-1.6-2.8.1-.1a1.7 1.7 0 0 0 .3-1.9l-.1-.2v-3.2l.1-.1a1.7 1.7 0 0 0-.3-1.9l-.1-.2 1.6-2.8.2.1a1.7 1.7 0 0 0 1.9-.3l.1-.2h3.2l.2.2a1.7 1.7 0 0 0 1.9.3l.2-.1 1.6 2.8-.1.2a1.7 1.7 0 0 0-.3 1.9l.1.1v3.2z"/></svg>
+                    <span class="hidden sm:inline">MENU</span>
+                </summary>
+                <div class="player-actions-popover header-settings-popover">
+                    <button type="button" onclick="openProjectSettings()"><svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg> Editar projeto</button>
+                    <button type="button" onclick="resetDraft()"><svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg> Limpar picks</button>
+                </div>
+            </details>
         </div>
     </header>
 
@@ -503,7 +530,7 @@
             <!-- Título do Painel -->
             <div class="player-sidebar-title bg-brand-pink px-4 py-3 flex justify-between items-center shadow-md">
                 <h2 class="font-gamer font-bold text-white text-sm lg:text-base tracking-wider uppercase flex items-center gap-2">
-                    Participantes disponíveis
+                    <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg> Participantes disponíveis
                 </h2>
                 <span id="playerCountBadge" class="bg-black/40 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
             </div>
@@ -830,6 +857,7 @@
         });
 
         function openProjectSettings() {
+            document.getElementById('headerSettingsMenu').open = false;
             document.getElementById('projectNameInput').value = project.name;
             document.getElementById('tournamentNameInput').value = project.tournament;
             document.getElementById('projectSubtitleInput').value = project.subtitle;
