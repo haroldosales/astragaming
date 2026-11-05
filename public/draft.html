@@ -158,7 +158,16 @@
             --brand-line: #302c39;
             --brand-muted: #a7a1b0;
         }
-        body { background: #0c0b10; }
+        body {
+            background-color: #0c0b10;
+            background-image:
+                linear-gradient(rgb(12 11 16 / 50%), rgb(12 11 16 / 50%)),
+                url('/draft-circuit-background.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
         button, input { font: inherit; }
         button:focus-visible, input:focus-visible, summary:focus-visible {
             outline: 2px solid rgb(var(--brand-primary-rgb));

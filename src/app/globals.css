@@ -25,7 +25,14 @@
 html, body { min-height: 100%; }
 body {
   margin: 0;
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    linear-gradient(rgb(12 11 16 / 50%), rgb(12 11 16 / 50%)),
+    url("/draft-circuit-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: "Inter", sans-serif;
   font-size: 13px;
