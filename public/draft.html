@@ -417,6 +417,16 @@
             renderTeams();
         }
 
+        function editarJogadoraDoTime(teamIndex, playerIndex) {
+            const nick = teams[teamIndex]?.players[playerIndex];
+            if (nick) editarJogadora(nick);
+        }
+
+        function excluirJogadoraDoTime(teamIndex, playerIndex) {
+            const nick = teams[teamIndex]?.players[playerIndex];
+            if (nick) excluirJogadora(nick);
+        }
+
         function excluirJogadora(nick) {
             if (!confirm(`Excluir ${nick} definitivamente do Draft atual?`)) return;
 
@@ -478,10 +488,10 @@
                             <button onclick="removerDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Remover de volta para lista">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
-                            <button onclick="editarJogadora('${escapeHTML(playerNick)}')" class="text-gray-500 hover:text-white p-1 text-xs" title="Editar nick ${escapeHTML(playerNick)}" aria-label="Editar nick ${escapeHTML(playerNick)}">
+                            <button onclick="editarJogadoraDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-white p-1 text-xs" title="Editar nick ${escapeHTML(playerNick)}" aria-label="Editar nick ${escapeHTML(playerNick)}">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button onclick="excluirJogadora('${escapeHTML(playerNick)}')" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Excluir ${escapeHTML(playerNick)} do Draft" aria-label="Excluir ${escapeHTML(playerNick)} do Draft">
+                            <button onclick="excluirJogadoraDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Excluir ${escapeHTML(playerNick)} do Draft" aria-label="Excluir ${escapeHTML(playerNick)} do Draft">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
