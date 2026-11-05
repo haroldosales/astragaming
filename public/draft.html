@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURORA CUP - DRAFT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter e Orbitron para estilo Gamer -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            darkBg: '#09080e',
+                            cardBg: '#12111a',
+                            panelBg: '#181623',
+                            pink: '#ff007f',
+                            pinkDark: '#cc0066',
+                            pinkGlow: 'rgba(255, 0, 127, 0.4)',
+                            capGold: '#fbbf24',
+                        }
+                    },
+                    fontFamily: {
+                        gamer: ['Orbitron', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar para estilo cyberpunk/gamer */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09080e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2563eb;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1d4ed8;
+        }
+        * {
+            scrollbar-color: #2563eb #09080e;
+            scrollbar-width: thin;
+        }
+
+        /* Efeitos Neon */
+        .neon-border {
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3), inset 0 0 5px rgba(255, 0, 127, 0.2);
+        }
+        .neon-border-active {
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.8), inset 0 0 10px rgba(255, 0, 127, 0.4);
+        }
+        .neon-text {
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+        }
+
+        /* Animações de Drag and Drop */
+        .dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+        .drag-over {
+            border-color: #ff007f !important;
+            background-color: rgba(255, 0, 127, 0.08) !important;
+        }
+
+        /* Animação do Pick Ativo */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 0, 127, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(255, 0, 127, 1); }
+        }
+        .active-turn {
+            animation: pulseGlow 1.8s infinite ease-in-out;
+            border-color: #ff007f !important;
+        }
+    </style>
+</head>
+<body class="bg-brand-darkBg text-gray-100 font-body min-h-screen flex flex-col antialiased selection:bg-brand-pink selection:text-white">
+
+    <!-- BARRA SUPERIOR (HEADER) -->
+    <header class="bg-brand-cardBg border-b-2 border-brand-pink px-4 lg:px-8 py-4 flex flex-wrap justify-between items-center shadow-lg gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-white font-black text-lg neon-border">
+                <i class="fa-solid font-bold fa-crown text-xs"></i>
+            </div>
+            <h1 class="font-gamer text-xl lg:text-2xl font-extrabold tracking-wider text-white neon-text uppercase">
+                AURORA CUP <span class="text-brand-pink">- DRAFT</span>
+            </h1>
+        </div>
+
+        <!-- Controles do Header -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div id="turnIndicator" class="hidden sm:flex items-center gap-2 bg-brand-panelBg px-3 py-1.5 rounded border border-brand-pink/40 text-xs font-semibold">
+                <span class="text-gray-400">VEZ DO PICK:</span>
+                <span id="currentTurnTeamText" class="text-brand-pink font-gamer font-bold uppercase">NENHUM</span>
+                <span id="turnCounterBadge" class="bg-brand-pink/20 text-brand-pink border border-brand-pink/50 text-[10px] px-1.5 py-0.5 rounded font-mono ml-1">1/8</span>
+            </div>
+
+            <button id="btnSortear" onclick="sortearOrdem()" class="bg-brand-pink hover:bg-brand-pinkDark text-white font-gamer font-bold px-4 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 transform hover:scale-105 shadow-md flex items-center gap-2 neon-border">
+                <i class="fa-solid fa-shuffle"></i> SORTEAR ORDEM
+            </button>
+            <button id="btnNextTurn" onclick="proximoTurno()" class="bg-purple-700 hover:bg-purple-800 text-white font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-forward"></i> PRÓXIMO
+            </button>
+            <button onclick="resetDraft()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Reiniciar Draft">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- CORPO PRINCIPAL -->
+    <main class="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1920px] mx-auto w-full">
+
+        <!-- PAINEL LATERAL ESQUERDO: LISTA DE DRAFTADAS -->
+        <section class="lg:col-span-4 xl:col-span-3 bg-brand-panelBg border border-brand-pink/50 rounded-lg flex flex-col h-[650px] lg:h-[calc(100vh-140px)] shadow-xl overflow-hidden">
+            
+            <!-- Título do Painel -->
+            <div class="bg-brand-pink px-4 py-3 flex justify-between items-center shadow-md">
+                <h2 class="font-gamer font-bold text-white text-sm lg:text-base tracking-wider uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-users text-xs"></i> LISTA DE DRAFTADAS
+                </h2>
+                <span id="playerCountBadge" class="bg-black/40 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
+            </div>
+
+            <!-- Filtros e Input de Adição -->
+            <div class="p-3 bg-brand-cardBg border-b border-gray-800 space-y-2">
+                <!-- Adicionar Jogadora -->
+                <form id="addPlayerForm" onsubmit="adicionarJogadoraManual(event)" class="flex gap-2">
+                    <input type="text" id="newPlayerInput" placeholder="+ Adicionar nick..." required
+                        class="bg-brand-darkBg border border-gray-700 focus:border-brand-pink rounded px-3 py-1.5 text-xs text-white outline-none flex-1 transition-all">
+                    <button type="submit" class="bg-brand-pink hover:bg-brand-pinkDark px-3 py-1.5 rounded text-white text-xs font-bold transition-all">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </form>
+
+                <!-- Campo de Busca -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="filtrarJogadoras()" placeholder="Filtrar por nick..."
+                        class="w-full bg-brand-darkBg border border-gray-800 focus:border-brand-pink/60 rounded pl-8 pr-3 py-1.5 text-xs text-gray-300 outline-none transition-all">
+                </div>
+            </div>
+
+            <!-- Ranks de Marvel Rivals -->
+            <div class="px-3 py-2 bg-brand-panelBg border-b border-gray-800" aria-label="Ranks de Marvel Rivals">
+                <h3 class="font-gamer text-[10px] font-bold tracking-wider text-gray-400 mb-2">RANKS</h3>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <div class="flex items-center gap-1.5 min-w-0" title="Bronze">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/1%20Bronze%20Rank.png" alt="Bronze" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Bronze</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Prata">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/2%20Silver%20Rank.png" alt="Prata" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Prata</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Ouro">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/3%20Gold%20Rank.png" alt="Ouro" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Ouro</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Platina">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/4%20Platinum%20Rank.png" alt="Platina" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Platina</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Diamante">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/5%20Diamond%20Rank.png" alt="Diamante" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Diamante</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Grão-Mestre">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/6%20Grandmaster%20Rank.png" alt="Grão-Mestre" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Grão-Mestre</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Celestial">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/7%20Celestial%20Rank.png" alt="Celestial" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Celestial</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Eternidade">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/8%20Eternity%20Rank.png" alt="Eternidade" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Eternidade</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 min-w-0" title="Acima de Todos">
+                        <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/9%20One%20Above%20All%20Rank.png" alt="Acima de Todos" loading="lazy" class="w-7 h-7 object-contain flex-shrink-0">
+                        <span class="text-[9px] text-gray-300 truncate">Acima de Todos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista Rolável de Jogadoras -->
+            <div class="flex-1 p-2 overflow-y-auto">
+                <div id="availablePlayersList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 min-h-[100px]">
+                    <!-- Nicks serão inseridos dinamicamente aqui -->
+                </div>
+                <div id="emptyListNotice" class="hidden text-center py-10 text-gray-500 text-xs italic">
+                    Nenhuma jogadora disponível na lista.
+                </div>
+            </div>
+
+            <!-- Dica Visual -->
+            <div class="p-2 bg-brand-darkBg border-t border-gray-800/80 text-[10px] text-gray-400 text-center">
+                <i class="fa-solid fa-hand-pointer text-brand-pink mr-1"></i> Arraste a jogadora ou clique nela e depois no slot do time.
+            </div>
+        </section>
+
+
+        <!-- PAINEL PRINCIPAL: GRADE DOS TIMES (8 CARDS) -->
+        <section class="lg:col-span-8 xl:col-span-9 flex flex-col gap-3">
+            <!-- Banner de Ordem Sorteada -->
+            <div id="orderBanner" class="hidden bg-brand-cardBg border border-brand-pink/40 rounded-lg p-2.5 px-4 flex flex-wrap items-center justify-between gap-2 shadow-md">
+                <div class="flex items-center gap-2 text-xs font-gamer text-gray-300">
+                    <i class="fa-solid fa-list-ol text-brand-pink"></i>
+                    <span>ORDEM DOS PICKS:</span>
+                </div>
+                <div id="orderBadgesContainer" class="flex flex-wrap items-center gap-1.5">
+                    <!-- Badges com a ordem sorteada serão inseridos via JS -->
+                </div>
+            </div>
+
+            <div id="teamsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 auto-rows-fr">
+                <!-- 8 Cards de Times gerados por JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER DA APLICAÇÃO -->
+    <footer class="bg-brand-cardBg border-t border-gray-800 px-4 py-2 text-center text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
+        <div>AURORA CUP DRAFT SYSTEM &copy; 2026 - Desenvolvido para Transmissão de Esports</div>
+        <div class="text-[11px] text-gray-400">Pressione <kbd class="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-brand-pink font-mono">Espaço</kbd> para passar a vez do pick</div>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script>
+        // Dados Iniciais (Simulando o print da Aurora Cup)
+        const INITIAL_CAPTAINS = [
+            "NYMPHELYSIA", "IAMMARINADINIZ", "RIYUUKA", "PJ_LOBINHO",
+            "FERNANDA_TSTREAM", "IXTELAA", "STAYMISS", "LEAHHZITA"
+        ];
+
+        const INITIAL_PLAYERS = [
+            "AMANDIOCA", "AMETISTALY", "ANATVI", "ANAJ", "ANATHEGAM...", "AULITA", 
+            "AYUMIAR", "BATISTELAZI", "BELOVED", "BIAATIRADORA", "BLOODS2", "BONEMOON", 
+            "BOTAN_TOXICA", "BYSRTN", "CAHNEPO", "CARAMELINHO", "CATRINA_BOSS", "DARII", 
+            "DARKNESSLARI", "DATTEBASTE", "DEFVICKY", "DUDA_DESU", "ECLIPSA", "EMEPINES024...", 
+            "EMYONI", "EUAURORA", "EUSOUNEIDE", "EVEMO...", "FEEHEIKUCHI...", "GOTHIC", 
+            "GABI_B18", "GABS", "GALEGAPAUUSTA", "GGMDF", "GIGIVALENTINE", "GRLPWR", 
+            "HADIYA", "HANAOKA", "HARAJUKUGI...", "HEAVENLYYY...", "HEY_CL...", "HONDA", 
+            "IDKHELL", "ILOVEMMYS2", "JANNITAS", "JERICOSS", "JUBATRIZ", "KAIMI27", 
+            "KAJUNA", "KATRICIA", "KEDELLS", "KIRARA", "KIRRA", "KITSUNENOKIU", 
+            "KOORIQUEEN", "LEAHH_S2", "LLNANNY", "LYCDENIAL", "MARIMARA", "MEGAMOON", 
+            "MILLIE", "MITAKUMO", "MRS_WITCH", "NAMIEIN", "NHXZINHA", "NOAMI", 
+            "NOBREZA", "NOT_THEART...", "PADAWAN_C...", "QCERBERUS", "R_JENNY", "RAIROTACARIN", 
+            "RUEDO_BRAN...", "SISBELOVA", "STORYCHARA", "SZANMAS7", "TENEBRAMH"
+        ];
+
+        // Estado da Aplicação
+        let availablePlayers = [...INITIAL_PLAYERS];
+        let teams = INITIAL_CAPTAINS.map((cap, index) => ({
+            id: index + 1,
+            captain: cap,
+            name: `TEAM ${cap}`,
+            players: [] // Jogadores draftados além do capitão
+        }));
+
+        let selectedPlayerNick = null; // Jogadora clicada aguardando seleção de time
+        let draftOrder = [];           // Ordem sorteada dos índices dos times
+        let currentTurnIndex = -1;     // Índice do turno atual na draftOrder
+
+        // Inicializar a aplicação quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPlayersList();
+            renderTeams();
+            setupKeyboardShortcuts();
+        });
+
+        // ----------------------------------------------------
+        // RENDERIZAÇÃO DA LISTA DE DRAFTADAS
+        // ----------------------------------------------------
+        function renderPlayersList(filterText = '') {
+            const listContainer = document.getElementById('availablePlayersList');
+            const emptyNotice = document.getElementById('emptyListNotice');
+            const badge = document.getElementById('playerCountBadge');
+            
+            listContainer.innerHTML = '';
+            
+            const filtered = availablePlayers.filter(nick => 
+                nick.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            badge.innerText = availablePlayers.length;
+
+            if (filtered.length === 0) {
+                emptyNotice.classList.remove('hidden');
+            } else {
+                emptyNotice.classList.add('hidden');
+                filtered.forEach(nick => {
+                    const card = document.createElement('div');
+                    const isSelected = selectedPlayerNick === nick;
+
+                    card.className = `flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold select-none cursor-pointer border transition-all duration-150 ${
+                        isSelected 
+                        ? 'bg-brand-pink text-white border-white font-bold neon-border-active scale-105 z-10' 
+                        : 'bg-brand-darkBg hover:bg-gray-800 text-gray-200 border-gray-800 hover:border-brand-pink/50'
+                    }`;
+
+                    card.draggable = true;
+                    card.setAttribute('data-nick', nick);
+
+                    // Ícone aleatório visual simples de gamer
+                    card.innerHTML = `
+                        <div class="flex items-center gap-1.5 overflow-hidden">
+                            <i class="fa-solid fa-headset text-[10px] ${isSelected ? 'text-white' : 'text-brand-pink'} flex-shrink-0"></i>
+                            <span class="truncate">${nick}</span>
+                        </div>
+                    `;
+
+                    // Eventos de Clique
+                    card.addEventListener('click', () => handlePlayerSelect(nick));
+
+                    // Eventos de Drag & Drop
+                    card.addEventListener('dragstart', (e) => {
+                        card.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', nick);
+                    });
+
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('dragging');
+                    });
+
+                    listContainer.appendChild(card);
+                });
+            }
+        }
+
+        function filtrarJogadoras() {
+            const query = document.getElementById('searchInput').value;
+            renderPlayersList(query);
+        }
+
+        function adicionarJogadoraManual(e) {
+            e.preventDefault();
+            const input = document.getElementById('newPlayerInput');
+            const nick = input.value.trim().toUpperCase();
+            
+            if (nick && !availablePlayers.includes(nick)) {
+                availablePlayers.unshift(nick);
+                input.value = '';
+                renderPlayersList(document.getElementById('searchInput').value);
+            }
+        }
+
+        // ----------------------------------------------------
+        // RENDERIZAÇÃO DOS CARDS DOS TIMES
+        // ----------------------------------------------------
+        function renderTeams() {
+            const grid = document.getElementById('teamsGrid');
+            grid.innerHTML = '';
+
+            teams.forEach((team, teamIndex) => {
+                const isCurrentTurn = (draftOrder.length > 0 && draftOrder[currentTurnIndex] === teamIndex);
+
+                const teamCard = document.createElement('div');
+                teamCard.className = `bg-brand-panelBg border-2 rounded-lg flex flex-col overflow-hidden transition-all duration-300 ${
+                    isCurrentTurn ? 'border-brand-pink active-turn' : 'border-gray-800/90 hover:border-gray-700'
+                }`;
+
+                // Header do Time
+                const headerHtml = `
+                    <div class="bg-brand-cardBg px-3 py-2 border-b border-gray-800 flex justify-between items-center">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <div class="w-6 h-6 rounded-full ${isCurrentTurn ? 'bg-brand-pink text-white font-black scale-110 neon-border-active' : 'bg-brand-pink/20 border border-brand-pink text-brand-pink font-bold'} flex items-center justify-center text-xs transition-all">
+                                ${draftOrder.length > 0 ? (draftOrder.indexOf(teamIndex) + 1) : (teamIndex + 1)}
+                            </div>
+                            <h3 class="font-gamer text-xs sm:text-sm font-bold text-white truncate">${team.name}</h3>
+                        </div>
+                        ${isCurrentTurn ? '<span class="bg-brand-pink text-white text-[9px] font-gamer font-bold px-2 py-0.5 rounded animate-pulse shadow-lg">PICKING</span>' : ''}
+                    </div>
+
+                    <!-- Capitã do Time -->
+                    <div class="px-3 py-2 bg-gradient-to-r from-brand-cardBg to-brand-panelBg border-b border-gray-800/80 flex items-center justify-between">
+                        <div class="flex items-center gap-2 truncate">
+                            <i class="fa-solid fa-crown text-[10px] ${isCurrentTurn ? 'text-brand-pink animate-bounce' : 'text-brand-capGold'}"></i>
+                            <span class="text-xs font-bold text-gray-300 truncate">${team.captain}</span>
+                        </div>
+                        <span class="bg-brand-capGold text-black font-extrabold text-[10px] px-1.5 py-0.5 rounded shadow">CAP</span>
+                    </div>
+                `;
+
+                // Slots de Jogadoras (Simulando os picks do time)
+                let slotsHtml = `<div class="p-3 flex-1 flex flex-col gap-2 min-h-[220px]" data-team-index="${teamIndex}">`;
+                
+                // Exibe as jogadoras já draftadas
+                team.players.forEach((playerNick, pIndex) => {
+                    slotsHtml += `
+                        <div class="flex items-center justify-between bg-brand-darkBg/90 border border-brand-pink/30 hover:border-brand-pink px-2.5 py-1.5 rounded text-xs text-white transition-all">
+                            <span class="font-medium truncate"><i class="fa-solid fa-user text-brand-pink text-[10px] mr-1.5"></i>${playerNick}</span>
+                            <button onclick="removerDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Remover de volta para lista">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                // Slot em branco interativo
+                slotsHtml += `
+                    <div class="drop-zone flex-1 border-2 border-dashed border-gray-800 hover:border-brand-pink/60 rounded flex items-center justify-center text-gray-600 text-xs py-3 cursor-pointer transition-all min-h-[50px] ${selectedPlayerNick ? 'bg-brand-pink/5 border-brand-pink/40 animate-pulse' : ''}"
+                        onclick="draftPlayerToTeam(${teamIndex})"
+                        ondragover="handleDragOver(event)"
+                        ondragleave="handleDragLeave(event)"
+                        ondrop="handleDrop(event, ${teamIndex})">
+                        <span class="pointer-events-none text-[11px] font-medium text-gray-500 flex items-center gap-1">
+                            ${selectedPlayerNick ? '<i class="fa-solid fa-arrow-down-to-line text-brand-pink"></i> Clique para Draftar' : '<i class="fa-solid fa-plus opacity-40"></i> Slot Livre'}
+                        </span>
+                    </div>
+                `;
+
+                slotsHtml += `</div>`;
+
+                teamCard.innerHTML = headerHtml + slotsHtml;
+                grid.appendChild(teamCard);
+            });
+        }
+
+        // ----------------------------------------------------
+        // LÓGICA DE DRAFT E INTERAÇÕES
+        // ----------------------------------------------------
+
+        // Selecionar jogadora na lista com o clique
+        function handlePlayerSelect(nick) {
+            if (selectedPlayerNick === nick) {
+                selectedPlayerNick = null; // desativa se clicar na mesma
+            } else {
+                selectedPlayerNick = nick;
+            }
+            renderPlayersList(document.getElementById('searchInput').value);
+            renderTeams();
+        }
+
+        // Adicionar jogadora ao time
+        function draftPlayerToTeam(teamIndex, nickParam = null) {
+            const nickToDraft = nickParam || selectedPlayerNick;
+
+            if (!nickToDraft) return;
+
+            // Adiciona ao time
+            teams[teamIndex].players.push(nickToDraft);
+
+            // Remove da lista de disponíveis
+            availablePlayers = availablePlayers.filter(p => p !== nickToDraft);
+
+            // Reseta a seleção
+            selectedPlayerNick = null;
+
+            // Se o draft ativo estiver sendo usado, avança a vez automaticamente
+            if (draftOrder.length > 0 && draftOrder[currentTurnIndex] === teamIndex) {
+                proximoTurno();
+            } else {
+                renderPlayersList(document.getElementById('searchInput').value);
+                renderTeams();
+            }
+        }
+
+        // Remover jogadora do time de volta para a lista
+        function removerDoTime(teamIndex, playerIndex) {
+            const removedPlayer = teams[teamIndex].players.splice(playerIndex, 1)[0];
+            if (removedPlayer) {
+                availablePlayers.push(removedPlayer);
+                availablePlayers.sort(); // Mantém organizado
+                renderPlayersList(document.getElementById('searchInput').value);
+                renderTeams();
+            }
+        }
+
+        // ----------------------------------------------------
+        // DRAG AND DROP HANDLERS
+        // ----------------------------------------------------
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, teamIndex) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const nick = e.dataTransfer.getData('text/plain');
+            if (nick && availablePlayers.includes(nick)) {
+                draftPlayerToTeam(teamIndex, nick);
+            }
+        }
+
+        // ----------------------------------------------------
+        // SORTEIO DE ORDEM E CONTROLE DE TURNOS
+        // ----------------------------------------------------
+        function sortearOrdem() {
+            // Algoritmo de Fisher-Yates para embaralhar a ordem dos times aleatoriamente
+            draftOrder = teams.map((_, index) => index);
+            for (let i = draftOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [draftOrder[i], draftOrder[j]] = [draftOrder[j], draftOrder[i]];
+            }
+
+            // Opcional: Reordenar o próprio array de times se desejar reordenar os cards fisicamente na grade
+            teams.sort((a, b) => draftOrder.indexOf(teams.indexOf(a)) - draftOrder.indexOf(teams.indexOf(b)));
+            
+            // Reatualiza o draftOrder para ser sequencial pós-ordenação visual
+            draftOrder = teams.map((_, index) => index);
+
+            currentTurnIndex = 0;
+            renderOrderBanner();
+            atualizarIndicadorTurno();
+            renderTeams();
+        }
+
+        function renderOrderBanner() {
+            const banner = document.getElementById('orderBanner');
+            const container = document.getElementById('orderBadgesContainer');
+
+            if (draftOrder.length === 0) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            banner.classList.remove('hidden');
+            container.innerHTML = '';
+
+            draftOrder.forEach((tIdx, pos) => {
+                const team = teams[tIdx];
+                const isActive = pos === currentTurnIndex;
+
+                const badge = document.createElement('div');
+                badge.className = `flex items-center gap-1 text-[11px] px-2 py-0.5 rounded font-gamer transition-all ${
+                    isActive 
+                    ? 'bg-brand-pink text-white font-extrabold neon-border scale-105' 
+                    : 'bg-brand-darkBg text-gray-400 border border-gray-800'
+                }`;
+                badge.innerHTML = `<span class="text-[9px] opacity-70">#${pos + 1}</span> ${team.captain}`;
+                container.appendChild(badge);
+            });
+        }
+
+        function proximoTurno() {
+            if (draftOrder.length === 0) {
+                sortearOrdem();
+                return;
+            }
+
+            currentTurnIndex++;
+            if (currentTurnIndex >= draftOrder.length) {
+                // Reinicia a rodada mantendo a ordem sorteada
+                currentTurnIndex = 0;
+            }
+            renderOrderBanner();
+            atualizarIndicadorTurno();
+            renderTeams();
+        }
+
+        function atualizarIndicadorTurno() {
+            const turnIndicator = document.getElementById('turnIndicator');
+            const turnText = document.getElementById('currentTurnTeamText');
+            const turnCounter = document.getElementById('turnCounterBadge');
+
+            if (draftOrder.length > 0 && currentTurnIndex >= 0) {
+                const currentTeam = teams[draftOrder[currentTurnIndex]];
+                turnIndicator.classList.remove('hidden');
+                turnText.innerText = currentTeam.name;
+                turnCounter.innerText = `${currentTurnIndex + 1}/${teams.length}`;
+            } else {
+                turnIndicator.classList.add('hidden');
+            }
+        }
+
+        function resetDraft() {
+            if (confirm("Deseja realmente reiniciar todo o draft?")) {
+                availablePlayers = [...INITIAL_PLAYERS];
+                teams = INITIAL_CAPTAINS.map((cap, index) => ({
+                    id: index + 1,
+                    captain: cap,
+                    name: `TEAM ${cap}`,
+                    players: []
+                }));
+                draftOrder = [];
+                currentTurnIndex = -1;
+                selectedPlayerNick = null;
+                document.getElementById('turnIndicator').classList.add('hidden');
+                document.getElementById('orderBanner').classList.add('hidden');
+                renderPlayersList();
+                renderTeams();
+            }
+        }
+
+        // Atalhos de Teclado
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Avança turno com a tecla Espaço (se não estiver digitando num input)
+                if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    proximoTurno();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
