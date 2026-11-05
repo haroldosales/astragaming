@@ -86,6 +86,11 @@
     "TENEBRAMH"
   ],
   "playerRoles": {},
+  "roleCatalog": [
+    { "id": "duelist", "name": "Duelista", "iconUrl": "https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Duelist.png" },
+    { "id": "strategist", "name": "Estrategista", "iconUrl": "https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Strategist.png" },
+    { "id": "vanguard", "name": "Vanguarda", "iconUrl": "https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Vanguard.png" }
+  ],
   "teams": [
     { "id": 1, "captain": "NYMPHELYSIA", "name": "TEAM NYMPHELYSIA", "players": [] },
     { "id": 2, "captain": "IAMMARINADINIZ", "name": "TEAM IAMMARINADINIZ", "players": [] },

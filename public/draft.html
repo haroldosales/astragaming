@@ -140,27 +140,202 @@
             color: white;
         }
         .role-choice img { width: 44px; height: 44px; object-fit: contain; }
-        .player-role-control {
+        .role-manager-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .45rem; }
+        .role-manager-toolbar button { min-height: 2rem; border-radius: .25rem; padding: .4rem .65rem; font-size: .68rem; font-weight: 700; }
+        .role-manager-toolbar .role-manager-action { border: 1px solid #373342; background: #09080e; color: #d1d5db; }
+        .role-manager-toolbar .role-manager-action:hover:not(:disabled) { border-color: rgb(var(--brand-primary-rgb)); color: white; }
+        .role-manager-toolbar .role-manager-action:disabled { cursor: not-allowed; opacity: .4; }
+        .role-manager-toolbar .role-manager-gear { display: grid; width: 2rem; place-items: center; border: 1px solid #373342; background: #09080e; color: #d1d5db; }
+        .role-manager-toolbar .role-manager-gear.is-active { border-color: rgb(var(--brand-primary-rgb)); color: rgb(var(--brand-primary-rgb)); }
+        .role-manager-gear svg { width: 1rem; height: 1rem; }
+        .role-editor-input { margin-top: .35rem; width: 100%; border: 1px solid #373342; border-radius: .25rem; background: #09080e; padding: .55rem .7rem; color: white; outline: none; }
+        .role-editor-input:focus { border-color: rgb(var(--brand-primary-rgb)); }
+        .draft-form-input { margin-top: .35rem; width: 100%; min-height: 2.6rem; border: 1px solid var(--brand-line, #373342); border-radius: .3rem; background: #0c0b10; padding: .55rem .7rem; color: white; outline: none; }
+        .draft-form-input:focus { border-color: rgb(var(--brand-primary-rgb)); }
+        :root {
+            --brand-surface: #12111a;
+            --brand-panel: #17151f;
+            --brand-line: #302c39;
+            --brand-muted: #a7a1b0;
+        }
+        body { background: #0c0b10; }
+        button, input { font: inherit; }
+        button:focus-visible, input:focus-visible, summary:focus-visible {
+            outline: 2px solid rgb(var(--brand-primary-rgb));
+            outline-offset: 2px;
+        }
+        .draft-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding-block: .7rem;
+            background: rgb(18 17 26 / 96%);
+            border-bottom-width: 1px;
+            backdrop-filter: blur(12px);
+        }
+        .draft-header h1 { font-size: clamp(1rem, 2vw, 1.4rem); line-height: 1.2; }
+        .draft-header-actions { gap: .5rem; }
+        .draft-button { min-height: 2.5rem; }
+        .draft-main { align-items: start; gap: 1rem; }
+        .player-sidebar {
+            height: min(760px, calc(100vh - 112px));
+            min-height: 420px;
+            border-color: var(--brand-line);
+            background: var(--brand-panel);
+            box-shadow: none;
+        }
+        .player-sidebar-title {
+            min-height: 3.25rem;
+            padding-block: .65rem;
+            background: #1d1a26;
+            border-bottom: 1px solid var(--brand-line);
+        }
+        .player-sidebar-title h2 { font-size: .75rem; letter-spacing: .04em; }
+        .player-toolbar { background: #14121a; border-color: var(--brand-line); }
+        .player-toolbar input { min-height: 2.5rem; font-size: .75rem; }
+        .player-add-button { min-width: 6rem; padding-inline: .75rem; font-size: .72rem; }
+        .player-grid { grid-template-columns: minmax(0, 1fr) !important; gap: .35rem; }
+        .player-card {
+            min-height: 2.55rem;
+            padding: .35rem .45rem;
+            border-color: #292632;
+            background: #100f15;
+            font-size: .72rem;
+        }
+        .player-card.is-selected { border-color: rgb(var(--brand-primary-rgb)); }
+        .player-card > div:first-child { min-width: 0; flex: 1; }
+        .player-actions-menu { position: relative; flex: 0 0 auto; }
+        .player-actions-menu[open] { z-index: 30; }
+        .player-actions-menu > summary {
+            display: grid;
             width: 2rem;
             height: 2rem;
-            flex: 0 0 2rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: .15rem;
-            padding: .2rem;
-            border-radius: .25rem;
-            font-size: .55rem;
-            font-weight: 700;
+            place-items: center;
+            border-radius: .3rem;
+            color: #a7a1b0;
+            cursor: pointer;
+            list-style: none;
         }
-        .player-role-control img { width: 1.25rem; height: 1.25rem; object-fit: contain; }
-        .player-role-control .draft-mark { min-width: 1.2rem; height: 1.2rem; font-size: .5rem; }
+        .player-actions-menu > summary::-webkit-details-marker { display: none; }
+        .player-actions-menu > summary:hover, .player-actions-menu[open] > summary {
+            color: white;
+            background: #26232e;
+        }
+        .player-actions-menu > summary svg { width: 1rem; height: 1rem; }
+        .player-actions-popover {
+            position: absolute;
+            top: calc(100% + .35rem);
+            right: 0;
+            z-index: 40;
+            display: grid;
+            width: 10.5rem;
+            gap: .2rem;
+            padding: .35rem;
+            border: 1px solid var(--brand-line);
+            border-radius: .45rem;
+            background: #191720;
+            box-shadow: 0 12px 30px #0009;
+        }
+        .player-actions-popover button {
+            display: flex;
+            min-height: 2.3rem;
+            align-items: center;
+            gap: .55rem;
+            padding: .45rem .55rem;
+            border-radius: .3rem;
+            background: transparent;
+            color: #d3cfda;
+            text-align: left;
+            font-size: .72rem;
+            cursor: pointer;
+        }
+        .player-actions-popover button:hover { background: #292632; color: white; }
+        .player-actions-popover .delete-player, .player-actions-popover .delete-team-player { color: #fda4af; }
+        .player-actions-popover .delete-player:hover, .player-actions-popover .delete-team-player:hover { background: #3a1c27; color: #fecdd3; }
+        .player-role-indicator {
+            display: inline-grid;
+            width: 1.35rem;
+            height: 1.35rem;
+            flex: 0 0 auto;
+            place-items: center;
+            padding: 0;
+            border: 0;
+            border-radius: .25rem;
+            background: transparent;
+            cursor: pointer;
+        }
+        .player-role-indicator:hover { background: #292632; }
+        .player-role-indicator img { width: 1.1rem; height: 1.1rem; object-fit: contain; }
+        .player-role-indicator.role-duelist img { filter: brightness(0) saturate(100%) invert(28%) sepia(99%) saturate(4038%) hue-rotate(315deg) brightness(98%) contrast(101%); }
+        .player-role-indicator.role-strategist img { filter: brightness(0) saturate(100%) invert(60%) sepia(79%) saturate(570%) hue-rotate(106deg) brightness(93%) contrast(93%); }
+        .player-role-indicator.role-vanguard img { filter: brightness(0) saturate(100%) invert(65%) sepia(72%) saturate(2000%) hue-rotate(164deg) brightness(102%) contrast(101%); }
+        .player-role-indicator.is-unassigned { border: 1px dashed #514b5a; color: #aaa4b2; font-size: .9rem; }
+        .player-hint { color: var(--brand-muted); background: #100f15; border-color: var(--brand-line); }
+        .teams-panel { gap: .75rem; }
+        .teams-toolbar { min-height: 4.1rem; border-color: var(--brand-line); background: #14121a; }
+        .teams-toolbar h2 { font-size: .78rem; }
+        .teams-toolbar p { color: var(--brand-muted); font-size: .7rem; }
+        .draft-action-hint {
+            display: flex;
+            min-height: 2.75rem;
+            align-items: center;
+            gap: .55rem;
+            padding: .65rem .85rem;
+            border: 1px solid var(--brand-line);
+            border-radius: .45rem;
+            background: #14121a;
+            color: var(--brand-muted);
+            font-size: .75rem;
+        }
+        .draft-action-hint.has-player {
+            border-color: color-mix(in srgb, rgb(var(--brand-primary-rgb)) 45%, var(--brand-line));
+            color: #f3dbe6;
+        }
+        .team-card {
+            border-width: 1px;
+            border-color: var(--brand-line);
+            border-radius: .55rem;
+            background: #15131c;
+        }
+        .team-card.active-turn { animation: none; border-color: rgb(var(--brand-primary-rgb)) !important; }
+        .team-card-header { min-height: 3.25rem; background: #191720; border-color: var(--brand-line); }
+        .team-card-title { font-size: .72rem; letter-spacing: .01em; }
+        .team-captain { min-height: 2.8rem; background: #17151e; border-color: var(--brand-line); }
+        .team-captain-name { font-size: .72rem; }
+        .team-player-list { min-height: 220px; padding: .65rem; }
+        .team-player-row { min-height: 2.65rem; border-color: #332d3a; background: #100f15; }
+        .team-drop-zone { border-color: #3b3544; background: #111017; }
+        .team-drop-zone:hover { border-color: color-mix(in srgb, rgb(var(--brand-primary-rgb)) 60%, #3b3544); background: rgb(var(--brand-primary-rgb) / 5%); }
+        .active-turn-badge { letter-spacing: .05em; }
+        .draft-footer { border-color: var(--brand-line); color: #918b99; }
+        .draft-footer kbd { color: #d9b8cb; }
+        @media (max-width: 1023px) {
+            .draft-header { position: static; }
+            .player-sidebar { height: min(560px, 70vh); min-height: 360px; }
+            .player-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 640px) {
+            .draft-header { align-items: flex-start; padding-inline: .85rem; }
+            .draft-header h1 { font-size: 1rem; }
+            .draft-header-actions { justify-content: flex-start; width: 100%; }
+            .draft-header-actions button { min-height: 2.6rem; }
+            .draft-main { padding: .75rem; }
+            .player-sidebar { height: 55vh; min-height: 320px; }
+            .player-grid { grid-template-columns: minmax(0, 1fr) !important; }
+            .teams-toolbar { align-items: flex-start; }
+            .teams-toolbar > button { width: 100%; justify-content: center; }
+            .team-player-list { min-height: 150px; }
+            .draft-footer { justify-content: center; text-align: center; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+        }
     </style>
 </head>
 <body class="bg-brand-darkBg text-gray-100 font-body min-h-screen flex flex-col antialiased selection:bg-brand-pink selection:text-white">
 
     <!-- BARRA SUPERIOR (HEADER) -->
-    <header class="bg-brand-cardBg border-b-2 border-brand-pink px-4 lg:px-8 py-4 flex flex-wrap justify-between items-center shadow-lg gap-4">
+    <header class="draft-header bg-brand-cardBg border-b-2 border-brand-pink px-4 lg:px-8 py-4 flex flex-wrap justify-between items-center shadow-lg gap-4">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-white font-black text-lg neon-border">
                 <span class="draft-mark border-white/40 bg-white/10 text-white">AG</span>
@@ -172,24 +347,24 @@
         </div>
 
         <!-- Controles do Header -->
-        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div id="turnIndicator" class="hidden sm:flex items-center gap-2 bg-brand-panelBg px-3 py-1.5 rounded border border-brand-pink/40 text-xs font-semibold">
+        <div class="draft-header-actions flex flex-wrap items-center gap-2 sm:gap-3">
+            <div id="turnIndicator" class="hidden items-center gap-2 bg-brand-panelBg px-3 py-1.5 rounded border border-brand-pink/40 text-xs font-semibold">
                 <span class="text-gray-400">VEZ DO PICK:</span>
                 <span id="currentTurnTeamText" class="text-brand-pink font-gamer font-bold uppercase">NENHUM</span>
                 <span id="turnCounterBadge" class="bg-brand-pink/20 text-brand-pink border border-brand-pink/50 text-[10px] px-1.5 py-0.5 rounded font-mono ml-1">1/8</span>
             </div>
 
-            <button id="btnSortear" onclick="sortearOrdem()" class="bg-brand-pink hover:bg-brand-pinkDark text-white font-gamer font-bold px-4 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 transform hover:scale-105 shadow-md flex items-center gap-2 neon-border">
+            <button id="btnSortear" onclick="sortearOrdem()" class="draft-button bg-brand-pink hover:bg-brand-pinkDark text-white font-gamer font-bold px-4 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 shadow-md flex items-center gap-2">
                 <span class="draft-mark border-white/30 bg-white/10 text-white">SO</span> SORTEAR ORDEM
             </button>
-            <button id="btnNextTurn" onclick="proximoTurno()" class="bg-brand-accent hover:brightness-90 text-white font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 flex items-center gap-1.5">
-                <span class="draft-mark border-white/30 bg-white/10 text-white">PR</span> PRÓXIMO
+            <button id="btnNextTurn" onclick="proximoTurno()" class="draft-button bg-brand-accent hover:brightness-90 text-white font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 flex items-center gap-1.5">
+                <span class="draft-mark border-white/30 bg-white/10 text-white">PR</span> <span id="nextTurnButtonLabel">SORTEAR E INICIAR</span>
             </button>
-            <button onclick="openProjectSettings()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Editar dados e cores do projeto">
-                <span class="draft-mark">PJ</span> <span class="hidden sm:inline">PROJETO</span>
+            <button onclick="openProjectSettings()" aria-label="Editar dados e cores do projeto" class="draft-button bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Editar dados e cores do projeto">
+                <span class="draft-mark">PJ</span> <span>PROJETO</span>
             </button>
-            <button onclick="resetDraft()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Limpar picks e manter os dados">
-                <span class="draft-mark">LP</span> <span class="hidden sm:inline">LIMPAR PICKS</span>
+            <button onclick="resetDraft()" aria-label="Limpar picks e manter os dados" class="draft-button bg-gray-800 hover:bg-gray-700 text-gray-300 font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 border border-gray-700" title="Limpar picks e manter os dados">
+                <span class="draft-mark">LP</span> <span>LIMPAR</span>
             </button>
         </div>
     </header>
@@ -253,108 +428,99 @@
         <div class="space-y-4 p-5">
             <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="font-mono text-[10px] tracking-widest text-brand-pink">FUNÇÃO DO PARTICIPANTE</p>
+                    <p id="playerRoleEyebrow" class="font-mono text-[10px] tracking-widest text-brand-pink">FUNÇÃO DO PARTICIPANTE</p>
                     <h2 id="playerRoleTitle" class="mt-1 font-gamer text-lg font-bold">Escolha uma função</h2>
                 </div>
                 <button type="button" onclick="closePlayerRoleDialog()" class="rounded p-1 text-gray-400 hover:text-white" aria-label="Fechar funções"><span class="draft-mark">FE</span></button>
             </div>
-            <div class="grid grid-cols-3 gap-2">
-                <button type="button" class="role-choice" data-role="duelist" onclick="setPlayerRole('duelist')" aria-label="Atribuir função Duelista">
-                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Duelist.png" alt="">
-                    <span>Duelista</span>
+            <p id="roleManagerHint" class="hidden text-xs text-gray-400">Selecione uma função para editar ou excluir, ou adicione uma nova.</p>
+            <div id="roleChoices" class="grid grid-cols-3 gap-2"></div>
+            <div class="role-manager-toolbar">
+                <button type="button" onclick="closePlayerRoleDialog()" class="border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700">Cancelar</button>
+                <button id="addRoleButton" type="button" onclick="openRoleEditor()" class="role-manager-action hidden">Adicionar</button>
+                <button id="editRoleButton" type="button" onclick="openRoleEditor(selectedRoleId)" class="role-manager-action hidden" disabled>Editar</button>
+                <button id="deleteRoleButton" type="button" onclick="deleteSelectedRole()" class="role-manager-action hidden" disabled>Excluir</button>
+                <button id="roleManagerToggle" type="button" onclick="toggleRoleManager()" class="role-manager-gear" title="Gerenciar funções e ícones" aria-label="Gerenciar funções e ícones" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)"/></svg>
                 </button>
-                <button type="button" class="role-choice" data-role="strategist" onclick="setPlayerRole('strategist')" aria-label="Atribuir função Estrategista">
-                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Strategist.png" alt="">
-                    <span>Estrategista</span>
-                </button>
-                <button type="button" class="role-choice" data-role="vanguard" onclick="setPlayerRole('vanguard')" aria-label="Atribuir função Vanguarda">
-                    <img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Vanguard.png" alt="">
-                    <span>Vanguarda</span>
-                </button>
+                <button id="removePlayerRoleButton" type="button" onclick="setPlayerRole(null)" class="ml-auto border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Remover função</button>
             </div>
-            <button type="button" onclick="setPlayerRole(null)" class="w-full rounded border border-gray-700 px-3 py-2 text-xs text-gray-300 hover:bg-gray-800">Remover função</button>
         </div>
     </dialog>
 
+    <dialog id="roleEditorDialog" class="w-[min(94vw,420px)] rounded-lg border border-gray-700 bg-brand-cardBg p-0 text-gray-100 shadow-2xl backdrop:bg-black/70">
+        <form onsubmit="saveRoleDetails(event)" class="space-y-4 p-5">
+            <div>
+                <p class="font-mono text-[10px] tracking-widest text-brand-pink">CATÁLOGO DE FUNÇÕES</p>
+                <h2 id="roleEditorTitle" class="mt-1 font-gamer text-lg font-bold">Adicionar função</h2>
+            </div>
+            <label class="block text-xs text-gray-300">Nome da função
+                <input id="roleNameInput" required maxlength="32" class="role-editor-input">
+            </label>
+            <label class="block text-xs text-gray-300">URL do ícone (RivalSkins / role-icons)
+                <input id="roleIconInput" type="url" required placeholder="https://rivalskins.com/.../role-icons/..." class="role-editor-input">
+            </label>
+            <p id="roleEditorError" class="hidden text-xs text-red-300" role="alert"></p>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeRoleEditor()" class="rounded border border-gray-700 px-3 py-2 text-xs text-gray-300 hover:bg-gray-800">Cancelar</button>
+                <button type="submit" class="rounded bg-brand-pink px-4 py-2 text-xs font-bold text-white hover:bg-brand-pinkDark">Salvar função</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="editPlayerDialog" class="w-[min(94vw,420px)] rounded-lg border border-gray-700 bg-brand-cardBg p-0 text-gray-100 shadow-2xl backdrop:bg-black/70">
+        <form onsubmit="savePlayerNick(event)" class="space-y-4 p-5">
+            <div>
+                <p class="font-mono text-[10px] tracking-widest text-brand-pink">PARTICIPANTES DO DRAFT</p>
+                <h2 class="mt-1 font-gamer text-lg font-bold">Editar nome</h2>
+            </div>
+            <label for="editPlayerNameInput" class="block text-xs text-gray-300">Nome ou nick
+                <input id="editPlayerNameInput" required maxlength="32" class="draft-form-input" autocomplete="off">
+            </label>
+            <p id="editPlayerNameError" class="hidden text-xs text-red-300" role="alert"></p>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeEditPlayerDialog()" class="rounded border border-gray-700 px-3 py-2 text-xs text-gray-300 hover:bg-gray-800">Cancelar</button>
+                <button type="submit" class="rounded bg-brand-pink px-4 py-2 text-xs font-bold text-white hover:bg-brand-pinkDark">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
     <!-- CORPO PRINCIPAL -->
-    <main class="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1920px] mx-auto w-full">
+    <main class="draft-main flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1920px] mx-auto w-full">
 
         <!-- PAINEL LATERAL ESQUERDO: LISTA DE DRAFTADAS -->
-        <section class="lg:col-span-4 xl:col-span-3 bg-brand-panelBg border border-brand-pink/50 rounded-lg flex flex-col h-[650px] lg:h-[calc(100vh-140px)] shadow-xl overflow-hidden">
+        <section class="player-sidebar lg:col-span-4 xl:col-span-3 bg-brand-panelBg border border-brand-pink/50 rounded-lg flex flex-col h-[650px] lg:h-[calc(100vh-140px)] shadow-xl overflow-hidden" aria-label="Participantes disponíveis">
             
             <!-- Título do Painel -->
-            <div class="bg-brand-pink px-4 py-3 flex justify-between items-center shadow-md">
+            <div class="player-sidebar-title bg-brand-pink px-4 py-3 flex justify-between items-center shadow-md">
                 <h2 class="font-gamer font-bold text-white text-sm lg:text-base tracking-wider uppercase flex items-center gap-2">
-                    <span class="draft-mark border-white/30 bg-white/10 text-white">JD</span> JOGADORAS DISPONÍVEIS
+                    Participantes disponíveis
                 </h2>
                 <span id="playerCountBadge" class="bg-black/40 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
             </div>
 
             <!-- Filtros e Input de Adição -->
-            <div class="p-3 bg-brand-cardBg border-b border-gray-800 space-y-2">
+            <div class="player-toolbar p-3 bg-brand-cardBg border-b border-gray-800 space-y-2">
                 <!-- Adicionar Jogadora -->
                 <form id="addPlayerForm" onsubmit="adicionarJogadoraManual(event)" class="flex gap-2">
-                    <input type="text" id="newPlayerInput" placeholder="+ Adicionar nick..." maxlength="32" required
+                    <input type="text" id="newPlayerInput" placeholder="Nome do participante" maxlength="32" required aria-label="Nome do novo participante"
                         class="bg-brand-darkBg border border-gray-700 focus:border-brand-pink rounded px-3 py-1.5 text-xs text-white outline-none flex-1 transition-all">
-                    <button type="submit" class="bg-brand-pink hover:bg-brand-pinkDark px-3 py-1.5 rounded text-white text-xs font-bold transition-all">
-                        <span class="draft-mark border-white/30 bg-white/10 text-white">AD</span>
+                    <button type="submit" class="player-add-button bg-brand-pink hover:bg-brand-pinkDark rounded text-white text-xs font-bold transition-all" aria-label="Adicionar participante">
+                        Adicionar
                     </button>
                 </form>
 
                 <!-- Campo de Busca -->
                 <div class="relative">
-                    <span class="draft-mark absolute left-2 top-1.5">BU</span>
-                    <input type="text" id="searchInput" oninput="filtrarJogadoras()" placeholder="Filtrar por nick..."
-                        class="w-full bg-brand-darkBg border border-gray-800 focus:border-brand-pink/60 rounded pl-8 pr-3 py-1.5 text-xs text-gray-300 outline-none transition-all">
+                    <input type="search" id="searchInput" oninput="filtrarJogadoras()" placeholder="Buscar participante..."
+                        aria-label="Buscar participante por nick" class="w-full bg-brand-darkBg border border-gray-800 focus:border-brand-pink/60 rounded px-3 py-1.5 text-xs text-gray-300 outline-none transition-all">
                 </div>
             </div>
 
             <!-- Ranks de Marvel Rivals -->
-            <div class="px-3 py-2 bg-brand-panelBg border-b border-gray-800" aria-label="Ranks de Marvel Rivals">
-                <h3 class="font-gamer text-[10px] font-bold tracking-wider text-gray-400 mb-2">RANKS</h3>
-                <div class="grid grid-cols-3 gap-1.5">
-                    <div class="flex items-center gap-1.5 min-w-0" title="Bronze">
-                        <span class="draft-mark rank-mark" aria-hidden="true">BR<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/1%20Bronze%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Bronze</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Prata">
-                        <span class="draft-mark rank-mark" aria-hidden="true">PR<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/2%20Silver%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Prata</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Ouro">
-                        <span class="draft-mark rank-mark" aria-hidden="true">OU<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/3%20Gold%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Ouro</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Platina">
-                        <span class="draft-mark rank-mark" aria-hidden="true">PT<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/4%20Platinum%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Platina</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Diamante">
-                        <span class="draft-mark rank-mark" aria-hidden="true">DI<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/5%20Diamond%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Diamante</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Grão-Mestre">
-                        <span class="draft-mark rank-mark" aria-hidden="true">GM<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/6%20Grandmaster%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Grão-Mestre</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Celestial">
-                        <span class="draft-mark rank-mark" aria-hidden="true">CE<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/7%20Celestial%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Celestial</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Eternidade">
-                        <span class="draft-mark rank-mark" aria-hidden="true">ET<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/8%20Eternity%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Eternidade</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 min-w-0" title="Acima de Todos">
-                        <span class="draft-mark rank-mark" aria-hidden="true">AT<img src="https://rivalskins.com/wp-content/uploads/marvel-assets/assets/rank-logos/9%20One%20Above%20All%20Rank.png" alt="" loading="lazy" onerror="this.style.display='none'"></span>
-                        <span class="text-[9px] text-gray-300 truncate">Acima de Todos</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Lista Rolável de Jogadoras -->
             <div class="flex-1 p-2 overflow-y-auto">
-                <div id="availablePlayersList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 min-h-[100px]">
+                <div id="availablePlayersList" class="player-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 min-h-[100px]">
                     <!-- Nicks serão inseridos dinamicamente aqui -->
                 </div>
                 <div id="emptyListNotice" class="hidden text-center py-10 text-gray-500 text-xs italic">
@@ -363,22 +529,26 @@
             </div>
 
             <!-- Dica Visual -->
-            <div class="p-2 bg-brand-darkBg border-t border-gray-800/80 text-[10px] text-gray-400 text-center">
-                <span class="draft-mark mr-1">DR</span> Arraste a jogadora ou clique nela e depois no slot do time.
+            <div class="player-hint p-2 bg-brand-darkBg border-t border-gray-800/80 text-[10px] text-gray-400 text-center">
+                Selecione um participante e depois uma equipe.
             </div>
         </section>
 
 
         <!-- PAINEL PRINCIPAL: GRADE DOS TIMES -->
-        <section class="lg:col-span-8 xl:col-span-9 flex flex-col gap-3">
-            <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-800 bg-brand-cardBg px-4 py-2.5">
+        <section class="teams-panel lg:col-span-8 xl:col-span-9 flex flex-col gap-3" aria-label="Equipes do Draft">
+            <div class="teams-toolbar flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-800 bg-brand-cardBg px-4 py-2.5">
                 <div>
-                    <h2 class="font-gamer text-xs font-bold tracking-wider text-white">EQUIPES</h2>
-                    <p class="mt-1 text-[10px] text-gray-400">Edite nomes, capitãs e participantes a qualquer momento.</p>
+                    <h2 class="font-gamer text-xs font-bold tracking-wider text-white">Equipes do Draft</h2>
+                    <p class="mt-1 text-[10px] text-gray-400">Escolha um participante para adicioná-lo a uma equipe.</p>
                 </div>
                 <button onclick="addTeam()" class="flex items-center gap-2 rounded bg-brand-pink px-3 py-2 text-xs font-bold text-white transition hover:bg-brand-pinkDark">
-                    <span class="draft-mark border-white/30 bg-white/10 text-white">AD</span> NOVA EQUIPE
+                    Nova equipe
                 </button>
+            </div>
+
+            <div id="draftActionHint" class="draft-action-hint" role="status" aria-live="polite">
+                Selecione um participante na lista para começar.
             </div>
 
             <!-- Banner de Ordem Sorteada -->
@@ -392,7 +562,7 @@
                 </div>
             </div>
 
-            <div id="teamsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 auto-rows-fr">
+            <div id="teamsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 auto-rows-fr">
                 <!-- 8 Cards de Times gerados por JS -->
             </div>
         </section>
@@ -400,7 +570,7 @@
     </main>
 
     <!-- FOOTER DA APLICAÇÃO -->
-    <footer class="bg-brand-cardBg border-t border-gray-800 px-4 py-2 text-center text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
+    <footer class="draft-footer bg-brand-cardBg border-t border-gray-800 px-4 py-2 text-center text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
         <div><span id="footerProjectName">ASTRA GAMING</span> · <span id="footerProjectSubtitle">DRAFT 2026</span> DRAFT SYSTEM &copy; 2026</div>
         <div class="text-[11px] text-gray-400">Pressione <kbd class="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-brand-pink font-mono">Espaço</kbd> para passar a vez do pick</div>
     </footer>
@@ -417,23 +587,28 @@
         let currentTurnIndex = -1;
         let editingTeamIndex = -1;
         let editingPlayerRoleNick = null;
-        const roleDetails = {
-            duelist: {
+        let editingPlayerNick = null;
+        const defaultRoleCatalog = [
+            {
+                id: 'duelist',
                 name: 'Duelista',
-                mark: 'DU',
                 iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Duelist.png'
             },
-            strategist: {
+            {
+                id: 'strategist',
                 name: 'Estrategista',
-                mark: 'ES',
                 iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Strategist.png'
             },
-            vanguard: {
+            {
+                id: 'vanguard',
                 name: 'Vanguarda',
-                mark: 'VA',
                 iconUrl: 'https://rivalskins.com/wp-content/uploads/marvel-assets/assets/role-icons/Vanguard.png'
             }
-        };
+        ];
+        let roleCatalog = defaultRoleCatalog.map(role => ({ ...role }));
+        let managingRoles = false;
+        let selectedRoleId = null;
+        let editingRoleId = null;
 
         function escapeHTML(value) {
             return String(value).replace(/[&<>"']/g, character => ({
@@ -455,8 +630,59 @@
             return [...availablePlayers, ...teams.flatMap(team => team.players)];
         }
 
+        function getRoleDetails(roleId) {
+            return roleCatalog.find(role => role.id === roleId) ?? null;
+        }
+
+        function closePlayerActionMenus() {
+            document.querySelectorAll('.player-actions-menu[open]').forEach(menu => { menu.open = false; });
+        }
+
+        function gearIconHtml() {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.6 2.8-.2-.1a1.7 1.7 0 0 0-1.9.3l-.2.2h-3.2l-.1-.2a1.7 1.7 0 0 0-1.9-.3l-.2.1-1.6-2.8.1-.1a1.7 1.7 0 0 0 .3-1.9l-.1-.2v-3.2l.1-.1a1.7 1.7 0 0 0-.3-1.9l-.1-.2 1.6-2.8.2.1a1.7 1.7 0 0 0 1.9-.3l.1-.2h3.2l.2.2a1.7 1.7 0 0 0 1.9.3l.2-.1 1.6 2.8-.1.2a1.7 1.7 0 0 0-.3 1.9l.1.1v3.2z"></path></svg>';
+        }
+
+        function playerRoleIndicatorHtml(nick, teamIndex = null, playerIndex = null) {
+            const role = getRoleDetails(playerRoles[nick]);
+            const label = role ? `Função de ${nick}: ${role.name}. Clique para alterar.` : `Atribuir função para ${nick}`;
+            const roleClass = role?.id === 'duelist' || role?.id === 'strategist' || role?.id === 'vanguard'
+                ? `role-${role.id}`
+                : '';
+            const action = teamIndex === null
+                ? ''
+                : ` onclick="event.stopPropagation();openPlayerRoleDialogForTeam(${teamIndex}, ${playerIndex})"`;
+            const contents = role
+                ? `<img src="${escapeHTML(role.iconUrl)}" alt="">`
+                : '<span aria-hidden="true">+</span>';
+            return `<button type="button" class="player-role-indicator ${role ? roleClass : 'is-unassigned'}" title="${escapeHTML(label)}" aria-label="${escapeHTML(label)}"${action}>${contents}</button>`;
+        }
+
+        function isAllowedRoleIconUrl(value) {
+            if (typeof value !== 'string') return false;
+            try {
+                const url = new URL(value);
+                return url.protocol === 'https:'
+                    && url.hostname === 'rivalskins.com'
+                    && url.pathname.includes('/role-icons/');
+            } catch {
+                return false;
+            }
+        }
+
+        function isRoleCatalogValid(value) {
+            return Array.isArray(value)
+                && value.every(role => role && typeof role.id === 'string' && role.id.trim()
+                    && typeof role.name === 'string' && role.name.trim()
+                    && isAllowedRoleIconUrl(role.iconUrl))
+                && new Set(value.map(role => role.id)).size === value.length;
+        }
+
+        function normalizeRoleCatalog(value) {
+            return isRoleCatalogValid(value) ? value.map(role => ({ ...role })) : defaultRoleCatalog.map(role => ({ ...role }));
+        }
+
         function isPlayerRole(value) {
-            return Object.hasOwn(roleDetails, value);
+            return typeof value === 'string' && roleCatalog.some(role => role.id === value);
         }
 
         function normalizePlayerRoles(value) {
@@ -469,20 +695,6 @@
             return roles;
         }
 
-        function playerRoleControlContentsHtml(nick) {
-            const role = playerRoles[nick];
-            if (!isPlayerRole(role)) {
-                return '<span class="draft-mark">FU</span>';
-            }
-            const details = roleDetails[role];
-            return `<img src="${details.iconUrl}" alt=""><span>${details.mark}</span>`;
-        }
-
-        function playerRoleControlTitle(nick) {
-            const role = playerRoles[nick];
-            return isPlayerRole(role) ? `Alterar função de ${nick}: ${roleDetails[role].name}` : `Atribuir função para ${nick}`;
-        }
-
         function isProjectValid(value) {
             return value && typeof value.name === 'string' && value.name.trim()
                 && typeof value.tournament === 'string' && value.tournament.trim()
@@ -492,6 +704,7 @@
         }
 
         function isDraftStateValid(value) {
+            const catalog = value?.roleCatalog === undefined ? defaultRoleCatalog : value.roleCatalog;
             return value && isProjectValid(value.project)
                 && Array.isArray(value.availablePlayers)
                 && value.availablePlayers.every(player => typeof player === 'string')
@@ -502,9 +715,10 @@
                     && Array.isArray(team.players) && team.players.every(player => typeof player === 'string'))
                 && Array.isArray(value.draftOrder)
                 && value.draftOrder.every(index => Number.isInteger(index) && index >= 0 && index < value.teams.length)
+                && isRoleCatalogValid(catalog)
                 && (value.playerRoles === undefined || (value.playerRoles && typeof value.playerRoles === 'object'
                     && !Array.isArray(value.playerRoles)
-                    && Object.values(value.playerRoles).every(isPlayerRole)))
+                    && Object.values(value.playerRoles).every(role => catalog.some(item => item.id === role))))
                 && Number.isInteger(value.currentTurnIndex)
                 && value.currentTurnIndex >= -1
                 && (value.draftOrder.length === 0 || value.currentTurnIndex < value.draftOrder.length);
@@ -540,6 +754,7 @@
                     project,
                     availablePlayers,
                     playerRoles,
+                    roleCatalog,
                     teams,
                     draftOrder,
                     currentTurnIndex
@@ -570,15 +785,18 @@
                     const saved = JSON.parse(stored);
                     if (!isDraftStateValid(saved)) throw new Error('Os dados salvos não correspondem ao formato esperado.');
                     ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = saved);
+                    roleCatalog = normalizeRoleCatalog(saved.roleCatalog);
                     playerRoles = normalizePlayerRoles(saved.playerRoles);
                 } catch (error) {
                     console.error('Os dados salvos do Draft não puderam ser carregados.', error);
                     alert('Os dados salvos do Draft estão inválidos. Os dados iniciais serão carregados.');
                     ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = defaults);
+                    roleCatalog = normalizeRoleCatalog(defaults.roleCatalog);
                     playerRoles = normalizePlayerRoles(defaults.playerRoles);
                 }
             } else {
                 ({ project, availablePlayers, teams, draftOrder, currentTurnIndex } = defaults);
+                roleCatalog = normalizeRoleCatalog(defaults.roleCatalog);
                 playerRoles = normalizePlayerRoles(defaults.playerRoles);
             }
 
@@ -590,6 +808,7 @@
         function renderDraft() {
             renderPlayersList(document.getElementById('searchInput').value);
             renderTeams();
+            updateDraftActionHint();
             renderOrderBanner();
             atualizarIndicadorTurno();
         }
@@ -634,6 +853,7 @@
         }
 
         function openTeamSettings(index) {
+            closePlayerActionMenus();
             editingTeamIndex = index;
             const team = teams[index];
             document.getElementById('teamNameInput').value = team.name;
@@ -649,13 +869,13 @@
 
         function openPlayerRoleDialog(nick) {
             if (!getAllPlayerNicks().includes(nick)) return;
+            closePlayerActionMenus();
             editingPlayerRoleNick = nick;
             document.getElementById('playerRoleTitle').innerText = `Função de ${nick}`;
-            document.querySelectorAll('.role-choice').forEach(button => {
-                const isSelected = button.dataset.role === playerRoles[nick];
-                button.classList.toggle('is-selected', isSelected);
-                button.setAttribute('aria-pressed', String(isSelected));
-            });
+            selectedRoleId = playerRoles[nick] ?? null;
+            managingRoles = false;
+            renderRoleChoices();
+            updateRoleManagerControls();
             document.getElementById('playerRoleDialog').showModal();
         }
 
@@ -666,7 +886,119 @@
 
         function closePlayerRoleDialog() {
             editingPlayerRoleNick = null;
+            managingRoles = false;
             document.getElementById('playerRoleDialog').close();
+        }
+
+        function renderRoleChoices() {
+            const choices = document.getElementById('roleChoices');
+            choices.innerHTML = '';
+            roleCatalog.forEach(role => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `role-choice ${role.id === (managingRoles ? selectedRoleId : playerRoles[editingPlayerRoleNick]) ? 'is-selected' : ''}`;
+                button.setAttribute('aria-label', managingRoles ? `Selecionar função ${role.name}` : `Atribuir função ${role.name}`);
+                button.setAttribute('aria-pressed', String(role.id === (managingRoles ? selectedRoleId : playerRoles[editingPlayerRoleNick])));
+                button.innerHTML = `<img src="${escapeHTML(role.iconUrl)}" alt=""><span>${escapeHTML(role.name)}</span>`;
+                button.addEventListener('click', () => {
+                    if (managingRoles) {
+                        selectedRoleId = role.id;
+                        renderRoleChoices();
+                        updateRoleManagerControls();
+                    } else {
+                        setPlayerRole(role.id);
+                    }
+                });
+                choices.appendChild(button);
+            });
+            if (roleCatalog.length === 0) {
+                choices.innerHTML = '<p class="col-span-3 py-3 text-center text-xs text-gray-400">Nenhuma função cadastrada. Use a engrenagem para adicionar.</p>';
+            }
+        }
+
+        function updateRoleManagerControls() {
+            const toggle = document.getElementById('roleManagerToggle');
+            toggle.classList.toggle('is-active', managingRoles);
+            toggle.setAttribute('aria-pressed', String(managingRoles));
+            document.getElementById('roleManagerHint').classList.toggle('hidden', !managingRoles);
+            document.getElementById('playerRoleEyebrow').innerText = managingRoles ? 'GERENCIAR FUNÇÕES E ÍCONES' : 'FUNÇÃO DO PARTICIPANTE';
+            document.getElementById('addRoleButton').classList.toggle('hidden', !managingRoles);
+            document.getElementById('editRoleButton').classList.toggle('hidden', !managingRoles);
+            document.getElementById('deleteRoleButton').classList.toggle('hidden', !managingRoles);
+            document.getElementById('removePlayerRoleButton').classList.toggle('hidden', managingRoles);
+            const hasSelection = managingRoles && roleCatalog.some(role => role.id === selectedRoleId);
+            document.getElementById('editRoleButton').disabled = !hasSelection;
+            document.getElementById('deleteRoleButton').disabled = !hasSelection;
+        }
+
+        function toggleRoleManager() {
+            managingRoles = !managingRoles;
+            selectedRoleId = playerRoles[editingPlayerRoleNick] ?? null;
+            renderRoleChoices();
+            updateRoleManagerControls();
+        }
+
+        function openRoleEditor(roleId = null) {
+            editingRoleId = roleId;
+            const role = roleId ? roleCatalog.find(item => item.id === roleId) : null;
+            if (roleId && !role) return;
+            document.getElementById('roleEditorTitle').innerText = role ? 'Editar função' : 'Adicionar função';
+            document.getElementById('roleNameInput').value = role?.name ?? '';
+            document.getElementById('roleIconInput').value = role?.iconUrl ?? '';
+            document.getElementById('roleEditorError').classList.add('hidden');
+            document.getElementById('roleEditorDialog').showModal();
+        }
+
+        function closeRoleEditor() {
+            editingRoleId = null;
+            document.getElementById('roleEditorDialog').close();
+        }
+
+        function saveRoleDetails(event) {
+            event.preventDefault();
+            const name = document.getElementById('roleNameInput').value.trim();
+            const iconUrl = document.getElementById('roleIconInput').value.trim();
+            const error = document.getElementById('roleEditorError');
+            const existing = editingRoleId ? roleCatalog.find(role => role.id === editingRoleId) : null;
+            if (!name || !isAllowedRoleIconUrl(iconUrl)) {
+                error.innerText = 'Informe um nome e uma URL HTTPS de ícone do domínio rivalskins.com em role-icons.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (roleCatalog.some(role => role.id !== editingRoleId && role.name.toLowerCase() === name.toLowerCase())) {
+                error.innerText = 'Já existe uma função com esse nome.';
+                error.classList.remove('hidden');
+                return;
+            }
+            if (existing) {
+                existing.name = name;
+                existing.iconUrl = iconUrl;
+            } else {
+                const id = crypto.randomUUID();
+                roleCatalog.push({ id, name, iconUrl });
+                selectedRoleId = id;
+            }
+            closeRoleEditor();
+            saveDraftState();
+            renderRoleChoices();
+            updateRoleManagerControls();
+        }
+
+        function deleteSelectedRole() {
+            const role = roleCatalog.find(item => item.id === selectedRoleId);
+            if (!role) return;
+            const assignedCount = Object.values(playerRoles).filter(value => value === role.id).length;
+            const assignmentMessage = assignedCount ? ` A função será removida de ${assignedCount} participante${assignedCount === 1 ? '' : 's'}.` : '';
+            if (!confirm(`Excluir a função “${role.name}”?${assignmentMessage}`)) return;
+            roleCatalog = roleCatalog.filter(item => item.id !== role.id);
+            Object.keys(playerRoles).forEach(nick => {
+                if (playerRoles[nick] === role.id) delete playerRoles[nick];
+            });
+            selectedRoleId = null;
+            saveDraftState();
+            renderRoleChoices();
+            updateRoleManagerControls();
+            renderDraft();
         }
 
         function setPlayerRole(role) {
@@ -747,9 +1079,9 @@
                     const card = document.createElement('div');
                     const isSelected = selectedPlayerNick === nick;
 
-                    card.className = `flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold select-none cursor-pointer border transition-all duration-150 ${
+                    card.className = `player-card relative flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold select-none cursor-pointer border transition-all duration-150 ${
                         isSelected 
-                        ? 'bg-brand-pink text-white border-white font-bold neon-border-active scale-105 z-10' 
+                        ? 'is-selected bg-brand-pink/15 text-white border-brand-pink font-bold z-10'
                         : 'bg-brand-darkBg hover:bg-gray-800 text-gray-200 border-gray-800 hover:border-brand-pink/50'
                     }`;
 
@@ -758,31 +1090,28 @@
 
                     card.innerHTML = `
                         <div class="flex items-center gap-1.5 overflow-hidden">
-                            <span class="draft-mark flex-shrink-0 ${isSelected ? 'border-white/30 bg-white/10 text-white' : ''}" aria-hidden="true">${escapeHTML(getInitials(nick))}</span>
+                            ${playerRoleIndicatorHtml(nick)}
                             <span class="truncate">${escapeHTML(nick)}</span>
                         </div>
-                        <div class="flex items-center gap-0.5 shrink-0">
-                            <button type="button" class="player-role-control text-gray-400 hover:text-white p-1" title="${escapeHTML(playerRoleControlTitle(nick))}" aria-label="${escapeHTML(playerRoleControlTitle(nick))}">
-                                ${playerRoleControlContentsHtml(nick)}
-                            </button>
-                            <button type="button" class="edit-player text-gray-400 hover:text-white p-1" title="Editar nick ${escapeHTML(nick)}" aria-label="Editar nick ${escapeHTML(nick)}">
-                                <span class="draft-mark">ED</span>
-                            </button>
-                            <button type="button" class="delete-player text-gray-400 hover:text-red-400 p-1" title="Excluir ${escapeHTML(nick)} do Draft" aria-label="Excluir ${escapeHTML(nick)} do Draft">
-                                <span class="draft-mark">EX</span>
-                            </button>
-                        </div>
+                        <details class="player-actions-menu" aria-label="Ações de ${escapeHTML(nick)}">
+                            <summary aria-label="Abrir ações de ${escapeHTML(nick)}" title="Ações do participante">${gearIconHtml()}</summary>
+                            <div class="player-actions-popover">
+                                <button type="button" class="edit-player"><span aria-hidden="true">✎</span> Editar nome</button>
+                                <button type="button" class="delete-player"><span aria-hidden="true">×</span> Excluir participante</button>
+                            </div>
+                        </details>
                     `;
 
                     // Eventos de Clique
                     card.addEventListener('click', () => handlePlayerSelect(nick));
+                    card.querySelector('.player-actions-menu').addEventListener('click', event => event.stopPropagation());
+                    card.querySelector('.player-role-indicator').addEventListener('click', event => {
+                        event.stopPropagation();
+                        openPlayerRoleDialog(nick);
+                    });
                     card.querySelector('.edit-player').addEventListener('click', (event) => {
                         event.stopPropagation();
                         editarJogadora(nick);
-                    });
-                    card.querySelector('.player-role-control').addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        openPlayerRoleDialog(nick);
                     });
                     card.querySelector('.delete-player').addEventListener('click', (event) => {
                         event.stopPropagation();
@@ -825,17 +1154,35 @@
         }
 
         function editarJogadora(currentNick) {
-            const enteredNick = prompt('Digite o novo nick:', currentNick);
-            if (enteredNick === null) return;
+            if (!getAllPlayerNicks().includes(currentNick)) return;
+            closePlayerActionMenus();
+            editingPlayerNick = currentNick;
+            document.getElementById('editPlayerNameInput').value = currentNick;
+            document.getElementById('editPlayerNameError').classList.add('hidden');
+            document.getElementById('editPlayerDialog').showModal();
+            document.getElementById('editPlayerNameInput').focus();
+        }
 
-            const newNick = enteredNick.trim().toUpperCase();
+        function closeEditPlayerDialog() {
+            editingPlayerNick = null;
+            document.getElementById('editPlayerDialog').close();
+        }
+
+        function savePlayerNick(event) {
+            event.preventDefault();
+            const currentNick = editingPlayerNick;
+            if (!currentNick || !getAllPlayerNicks().includes(currentNick)) return;
+            const newNick = document.getElementById('editPlayerNameInput').value.trim().toUpperCase();
+            const error = document.getElementById('editPlayerNameError');
             if (!newNick) {
-                alert('O nick não pode ficar vazio.');
+                error.innerText = 'O nome não pode ficar vazio.';
+                error.classList.remove('hidden');
                 return;
             }
 
             if (newNick !== currentNick && getAllPlayerNicks().some(nick => nick.toLowerCase() === newNick.toLowerCase())) {
-                alert('Esse nick já está no Draft.');
+                error.innerText = 'Esse nome já está no Draft.';
+                error.classList.remove('hidden');
                 return;
             }
 
@@ -849,6 +1196,7 @@
             }
             if (selectedPlayerNick === currentNick) selectedPlayerNick = newNick;
 
+            closeEditPlayerDialog();
             saveDraftState();
             renderDraft();
         }
@@ -888,72 +1236,68 @@
                 const isCurrentTurn = (draftOrder.length > 0 && draftOrder[currentTurnIndex] === teamIndex);
 
                 const teamCard = document.createElement('div');
-                teamCard.className = `bg-brand-panelBg border-2 rounded-lg flex flex-col overflow-hidden transition-all duration-300 ${
+                teamCard.className = `team-card bg-brand-panelBg border-2 rounded-lg flex flex-col overflow-hidden transition-all duration-300 ${
                     isCurrentTurn ? 'border-brand-pink active-turn' : 'border-gray-800/90 hover:border-gray-700'
                 }`;
 
                 // Header do Time
                 const headerHtml = `
-                    <div class="bg-brand-cardBg px-3 py-2 border-b border-gray-800 flex justify-between items-center">
+                    <div class="team-card-header bg-brand-cardBg px-3 py-2 border-b border-gray-800 flex justify-between items-center">
                         <div class="flex items-center gap-2 overflow-hidden">
                             <div class="w-6 h-6 rounded-full ${isCurrentTurn ? 'bg-brand-pink text-white font-black scale-110 neon-border-active' : 'bg-brand-pink/20 border border-brand-pink text-brand-pink font-bold'} flex items-center justify-center text-xs transition-all">
                                 ${draftOrder.length > 0 ? (draftOrder.indexOf(teamIndex) + 1) : (teamIndex + 1)}
                             </div>
-                            <h3 class="font-gamer text-xs sm:text-sm font-bold text-white truncate">${escapeHTML(team.name)}</h3>
+                            <h3 class="team-card-title font-gamer text-xs sm:text-sm font-bold text-white truncate">${escapeHTML(team.name)}</h3>
                         </div>
                         <div class="flex items-center gap-1">
-                            ${isCurrentTurn ? '<span class="bg-brand-pink text-white text-[9px] font-gamer font-bold px-2 py-0.5 rounded animate-pulse shadow-lg">PICKING</span>' : ''}
+                            ${isCurrentTurn ? '<span class="active-turn-badge bg-brand-pink text-white text-[9px] font-gamer font-bold px-2 py-0.5 rounded">SUA VEZ</span>' : ''}
                             <button onclick="openTeamSettings(${teamIndex})" class="rounded p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white" title="Editar equipe ${escapeHTML(team.name)}" aria-label="Editar equipe ${escapeHTML(team.name)}">
-                                <span class="draft-mark">ED</span>
+                                ${gearIconHtml()}
                             </button>
                         </div>
                     </div>
 
                     <!-- Capitã do Time -->
-                    <div class="px-3 py-2 bg-gradient-to-r from-brand-cardBg to-brand-panelBg border-b border-gray-800/80 flex items-center justify-between">
+                    <div class="team-captain px-3 py-2 bg-gradient-to-r from-brand-cardBg to-brand-panelBg border-b border-gray-800/80 flex items-center justify-between">
                         <div class="flex items-center gap-2 truncate">
-                            <span class="draft-mark ${isCurrentTurn ? 'border-white/30 bg-white/10 text-white' : ''}">CAP</span>
-                            <span class="text-xs font-bold text-gray-300 truncate">${escapeHTML(team.captain)}</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Capitão</span>
+                            <span class="team-captain-name text-xs font-bold text-gray-300 truncate">${escapeHTML(team.captain)}</span>
                         </div>
-                        <span class="bg-brand-capGold text-black font-extrabold text-[10px] px-1.5 py-0.5 rounded shadow">CAP</span>
                     </div>
                 `;
 
                 // Slots de Jogadoras (Simulando os picks do time)
-                let slotsHtml = `<div class="p-3 flex-1 flex flex-col gap-2 min-h-[220px]" data-team-index="${teamIndex}">`;
+                let slotsHtml = `<div class="team-player-list p-3 flex-1 flex flex-col gap-2 min-h-[220px]" data-team-index="${teamIndex}">`;
                 
                 // Exibe as jogadoras já draftadas
                 team.players.forEach((playerNick, pIndex) => {
                     slotsHtml += `
-                        <div class="flex items-center justify-between bg-brand-darkBg/90 border border-brand-pink/30 hover:border-brand-pink px-2.5 py-1.5 rounded text-xs text-white transition-all">
-                            <span class="flex min-w-0 items-center gap-1.5 font-medium"><span class="draft-mark flex-shrink-0">${escapeHTML(getInitials(playerNick))}</span><span class="truncate">${escapeHTML(playerNick)}</span></span>
-                            <button type="button" onclick="openPlayerRoleDialogForTeam(${teamIndex}, ${pIndex})" class="player-role-control text-gray-300 hover:text-white" title="${escapeHTML(playerRoleControlTitle(playerNick))}" aria-label="${escapeHTML(playerRoleControlTitle(playerNick))}">
-                                ${playerRoleControlContentsHtml(playerNick)}
-                            </button>
-                            <button onclick="removerDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Remover de volta para lista">
-                                <span class="draft-mark">DEV</span>
-                            </button>
-                            <button onclick="editarJogadoraDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-white p-1 text-xs" title="Editar nick ${escapeHTML(playerNick)}" aria-label="Editar nick ${escapeHTML(playerNick)}">
-                                <span class="draft-mark">ED</span>
-                            </button>
-                            <button onclick="excluirJogadoraDoTime(${teamIndex}, ${pIndex})" class="text-gray-500 hover:text-red-400 p-1 text-xs" title="Excluir ${escapeHTML(playerNick)} do Draft" aria-label="Excluir ${escapeHTML(playerNick)} do Draft">
-                                <span class="draft-mark">EX</span>
-                            </button>
+                        <div class="team-player-row relative flex items-center justify-between gap-2 bg-brand-darkBg/90 border border-brand-pink/30 hover:border-brand-pink px-2.5 py-1.5 rounded text-xs text-white transition-all">
+                            <span class="flex min-w-0 items-center gap-1.5 font-medium">${playerRoleIndicatorHtml(playerNick, teamIndex, pIndex)}<span class="truncate">${escapeHTML(playerNick)}</span></span>
+                            <details class="player-actions-menu">
+                                <summary aria-label="Abrir ações de ${escapeHTML(playerNick)}" title="Ações do participante">${gearIconHtml()}</summary>
+                                <div class="player-actions-popover">
+                                    <button type="button" onclick="removerDoTime(${teamIndex}, ${pIndex})"><span aria-hidden="true">↩</span> Devolver à lista</button>
+                                    <button type="button" onclick="editarJogadoraDoTime(${teamIndex}, ${pIndex})"><span aria-hidden="true">✎</span> Editar nome</button>
+                                    <button type="button" class="delete-team-player" onclick="excluirJogadoraDoTime(${teamIndex}, ${pIndex})"><span aria-hidden="true">×</span> Excluir participante</button>
+                                </div>
+                            </details>
                         </div>
                     `;
                 });
 
                 // Slot em branco interativo
                 slotsHtml += `
-                    <div class="drop-zone flex-1 border-2 border-dashed border-gray-800 hover:border-brand-pink/60 rounded flex items-center justify-center text-gray-600 text-xs py-3 cursor-pointer transition-all min-h-[50px] ${selectedPlayerNick ? 'bg-brand-pink/5 border-brand-pink/40 animate-pulse' : ''}"
+                    <button type="button" class="team-drop-zone drop-zone flex-1 border-2 border-dashed border-gray-800 hover:border-brand-pink/60 rounded flex items-center justify-center text-gray-600 text-xs py-3 cursor-pointer transition-all min-h-[50px] ${selectedPlayerNick ? 'bg-brand-pink/5 border-brand-pink/40' : ''}"
                         onclick="draftPlayerToTeam(${teamIndex})"
+                        aria-label="${selectedPlayerNick ? `Adicionar ${escapeHTML(selectedPlayerNick)} à equipe ${escapeHTML(team.name)}` : `Escolher participante para a equipe ${escapeHTML(team.name)}`}"
                         ondragover="handleDragOver(event)"
                         ondragleave="handleDragLeave(event)"
                         ondrop="handleDrop(event, ${teamIndex})">
                         <span class="pointer-events-none text-[11px] font-medium text-gray-500 flex items-center gap-1">
-                            ${selectedPlayerNick ? '<span class="draft-mark">PICK</span> Clique para Draftar' : '<span class="draft-mark opacity-40">LIV</span> Slot Livre'}
+                            ${selectedPlayerNick ? `Adicionar ${escapeHTML(selectedPlayerNick)} à equipe` : 'Selecione um participante'}
                         </span>
-                    </div>
+                    </button>
                 `;
 
                 slotsHtml += `</div>`;
@@ -965,6 +1309,7 @@
             if (teams.length === 0) {
                 grid.innerHTML = '<div class="rounded-lg border border-dashed border-gray-700 p-8 text-center text-sm text-gray-400">Nenhuma equipe cadastrada. Use “Nova equipe” para começar.</div>';
             }
+            updateDraftActionHint();
         }
 
         // ----------------------------------------------------
@@ -980,6 +1325,16 @@
             }
             renderPlayersList(document.getElementById('searchInput').value);
             renderTeams();
+            updateDraftActionHint();
+        }
+
+        function updateDraftActionHint() {
+            const hint = document.getElementById('draftActionHint');
+            if (!hint) return;
+            hint.classList.toggle('has-player', Boolean(selectedPlayerNick));
+            hint.innerText = selectedPlayerNick
+                ? `Selecionado: ${selectedPlayerNick}. Escolha uma equipe para adicionar.`
+                : 'Selecione um participante na lista para começar.';
         }
 
         // Adicionar jogadora ao time
@@ -1113,14 +1468,18 @@
             const turnIndicator = document.getElementById('turnIndicator');
             const turnText = document.getElementById('currentTurnTeamText');
             const turnCounter = document.getElementById('turnCounterBadge');
+            const nextTurnLabel = document.getElementById('nextTurnButtonLabel');
+            nextTurnLabel.innerText = draftOrder.length > 0 ? 'PRÓXIMA EQUIPE' : 'SORTEAR E INICIAR';
 
             if (draftOrder.length > 0 && currentTurnIndex >= 0) {
                 const currentTeam = teams[draftOrder[currentTurnIndex]];
                 turnIndicator.classList.remove('hidden');
+                turnIndicator.classList.add('flex');
                 turnText.innerText = currentTeam.name;
                 turnCounter.innerText = `${currentTurnIndex + 1}/${teams.length}`;
             } else {
                 turnIndicator.classList.add('hidden');
+                turnIndicator.classList.remove('flex');
             }
         }
 

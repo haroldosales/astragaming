@@ -38,11 +38,18 @@ type DraftTeam = {
   players: string[];
 };
 
+type DraftRole = {
+  id: string;
+  name: string;
+  iconUrl: string;
+};
+
 type DraftOverview = {
   project: DraftProject;
   availablePlayers: string[];
   teams: DraftTeam[];
-  playerRoles?: Record<string, Role>;
+  playerRoles?: Record<string, string>;
+  roleCatalog?: DraftRole[];
   draftOrder: number[];
   currentTurnIndex: number;
 };
@@ -78,6 +85,11 @@ const initialCategories: Category[] = [
 const storageKey = "astra-gaming-categories";
 const draftStorageKey = "astra-gaming-draft";
 const defaultDraftOverview: DraftOverview = initialDraftData;
+const defaultDraftRoleCatalog: DraftRole[] = Object.entries(roleDetails).map(([id, details]) => ({
+  id,
+  name: details.name,
+  iconUrl: details.iconUrl,
+}));
 const subscribeHydration = () => () => {};
 const getHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
@@ -128,6 +140,12 @@ function isAllowedRoleIconUrl(value: unknown): value is string {
 function isDraftOverview(value: unknown): value is DraftOverview {
   if (!value || typeof value !== "object") return false;
   const draft = value as Partial<DraftOverview>;
+  const roleCatalog = Array.isArray(draft.roleCatalog)
+    ? draft.roleCatalog
+    : draft.roleCatalog === undefined ? defaultDraftRoleCatalog : [];
+  const roleIds = new Set(roleCatalog.flatMap((role) => (
+    role && typeof role.id === "string" ? [role.id] : []
+  )));
   return Boolean(
     draft.project
       && typeof draft.project.name === "string"
@@ -146,7 +164,12 @@ function isDraftOverview(value: unknown): value is DraftOverview {
       && (draft.playerRoles === undefined || (draft.playerRoles !== null
         && typeof draft.playerRoles === "object"
         && !Array.isArray(draft.playerRoles)
-        && Object.values(draft.playerRoles).every(isRole)))
+        && Object.values(draft.playerRoles).every((role) => typeof role === "string" && roleIds.has(role))))
+      && (draft.roleCatalog === undefined || Array.isArray(draft.roleCatalog))
+      && roleCatalog.every((role) => role && typeof role.id === "string" && role.id.length > 0
+        && typeof role.name === "string"
+        && isAllowedRoleIconUrl(role.iconUrl))
+      && new Set(roleCatalog.map((role) => role.id)).size === roleCatalog.length
       && Array.isArray(draft.draftOrder)
       && Number.isInteger(draft.currentTurnIndex),
   );
@@ -179,7 +202,11 @@ export default function Home() {
         }
         const parsed: unknown = JSON.parse(stored);
         if (!isDraftOverview(parsed)) throw new Error("Os dados salvos do Draft estão inválidos.");
-        setDraftOverview({ ...parsed, playerRoles: parsed.playerRoles ?? {} });
+        setDraftOverview({
+          ...parsed,
+          playerRoles: parsed.playerRoles ?? {},
+          roleCatalog: parsed.roleCatalog ?? defaultDraftRoleCatalog,
+        });
         setHasSavedDraft(true);
         setDraftReadError(false);
       } catch (error) {
@@ -331,10 +358,17 @@ export default function Home() {
               ) : (
                 <div className="draft-team-list">
                   {draftOverview.teams.slice(0, 4).map((team) => {
-                    const roleCounts = (Object.keys(roleDetails) as Role[])
-                      .map((role) => ({
-                        role,
-                        count: team.players.filter((player) => draftOverview.playerRoles?.[player] === role).length,
+                    const roleCatalog = draftOverview.roleCatalog ?? defaultDraftRoleCatalog;
+                    const assignedRoles = new Set(team.players
+                      .map((player) => draftOverview.playerRoles?.[player])
+                      .filter((role): role is string => typeof role === "string"));
+                    const roleCounts = roleCatalog
+                      .filter(({ id }) => assignedRoles.has(id))
+                      .map(({ id, name, iconUrl }) => ({
+                        id,
+                        name,
+                        iconUrl,
+                        count: team.players.filter((player) => draftOverview.playerRoles?.[player] === id).length,
                       }))
                       .filter(({ count }) => count > 0);
                     return (
@@ -343,9 +377,9 @@ export default function Home() {
                         <span><strong>{team.name}</strong><small>Capitã(o): {team.captain}</small></span>
                         <span className="draft-team-summary">
                           <span className="draft-team-role-counts">
-                            {roleCounts.map(({ role, count }) => (
-                              <span key={role} role="img" title={`${roleDetails[role].name}: ${count}`} aria-label={`${roleDetails[role].name}: ${count}`}>
-                                <Image src={roleDetails[role].iconUrl} alt="" width={14} height={14} unoptimized />
+                            {roleCounts.map(({ id, name, iconUrl, count }) => (
+                              <span key={id} role="img" title={`${name}: ${count}`} aria-label={`${name}: ${count}`}>
+                                <Image src={iconUrl} alt="" width={14} height={14} unoptimized />
                                 <small>{count}</small>
                               </span>
                             ))}
