@@ -323,6 +323,11 @@
             border-radius: .55rem;
             background: #15131c;
         }
+        .team-card.draw-highlight {
+            border-color: rgb(var(--brand-primary-rgb)) !important;
+            box-shadow: 0 0 22px rgb(var(--brand-primary-rgb) / 35%);
+            transform: scale(1.015);
+        }
         .team-card.active-turn { animation: none; border-color: rgb(var(--brand-primary-rgb)) !important; }
         .team-card-header { min-height: 3.25rem; background: #191720; border-color: var(--brand-line); }
         .team-card-title { font-size: .72rem; letter-spacing: .01em; }
@@ -335,6 +340,22 @@
         .active-turn-badge { letter-spacing: .05em; }
         .draft-footer { border-color: var(--brand-line); color: #918b99; }
         .draft-footer kbd { color: #d9b8cb; }
+        .draw-interaction-overlay { position: fixed; inset: 0; z-index: 40; cursor: wait; }
+        .draw-notice {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 50;
+            max-width: min(28rem, calc(100vw - 2rem));
+            border: 1px solid rgb(var(--brand-primary-rgb) / 65%);
+            border-radius: .55rem;
+            background: #17151f;
+            padding: .85rem 1rem;
+            color: white;
+            box-shadow: 0 12px 32px rgb(0 0 0 / 40%), 0 0 20px rgb(var(--brand-primary-rgb) / 18%);
+            font-size: .85rem;
+        }
+        .draw-notice strong { color: rgb(var(--brand-primary-rgb)); }
         @media (max-width: 1023px) {
             .draft-header { position: static; }
             .draft-header-brand h1 { display: none; }
@@ -611,9 +632,14 @@
         <div class="text-[11px] text-gray-400">Pressione <kbd class="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-brand-pink font-mono">Espaço</kbd> para passar a vez do pick</div>
     </footer>
 
+    <div id="drawInteractionOverlay" class="draw-interaction-overlay hidden" aria-hidden="true"></div>
+    <div id="drawNotice" class="draw-notice hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <!-- LOGICA JAVASCRIPT -->
     <script>
         const DRAFT_STORAGE_KEY = 'astra-gaming-draft';
+        const DRAW_ANIMATION_ROUNDS = 3;
+        const DRAW_STEP_DELAY_MS = 65;
         let project = null;
         let availablePlayers = [];
         let playerRoles = Object.create(null);
@@ -645,6 +671,8 @@
         let managingRoles = false;
         let selectedRoleId = null;
         let editingRoleId = null;
+        let isDrawingOrder = false;
+        let drawNoticeTimeout = null;
 
         function escapeHTML(value) {
             return String(value).replace(/[&<>"']/g, character => ({
@@ -1462,23 +1490,73 @@
         // ----------------------------------------------------
         // SORTEIO DE ORDEM E CONTROLE DE TURNOS
         // ----------------------------------------------------
-        function sortearOrdem() {
+        function wait(milliseconds) {
+            return new Promise(resolve => window.setTimeout(resolve, milliseconds));
+        }
+
+        function showDrawNotice(message) {
+            const notice = document.getElementById('drawNotice');
+            notice.innerHTML = `<strong>SORTEIO CONCLUÍDO</strong><br>${escapeHTML(message)}`;
+            notice.classList.remove('hidden');
+            window.clearTimeout(drawNoticeTimeout);
+            drawNoticeTimeout = window.setTimeout(() => notice.classList.add('hidden'), 5000);
+        }
+
+        function shuffleTeamIndices() {
+            const order = teams.map((_, index) => index);
+            for (let i = order.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [order[i], order[j]] = [order[j], order[i]];
+            }
+            return order;
+        }
+
+        async function sortearOrdem() {
+            if (isDrawingOrder) return;
             if (teams.length === 0) {
                 alert('Cadastre ao menos uma equipe para sortear a ordem.');
                 return;
             }
-            // Algoritmo de Fisher-Yates para embaralhar a ordem dos times aleatoriamente
-            draftOrder = teams.map((_, index) => index);
-            for (let i = draftOrder.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [draftOrder[i], draftOrder[j]] = [draftOrder[j], draftOrder[i]];
-            }
 
-            currentTurnIndex = 0;
-            saveDraftState();
-            renderOrderBanner();
-            atualizarIndicadorTurno();
-            renderTeams();
+            const sortButton = document.getElementById('btnSortear');
+            const turnText = document.getElementById('currentTurnTeamText');
+            const turnCounter = document.getElementById('turnCounterBadge');
+            const overlay = document.getElementById('drawInteractionOverlay');
+            isDrawingOrder = true;
+            sortButton.disabled = true;
+            sortButton.setAttribute('aria-busy', 'true');
+            overlay.classList.remove('hidden');
+            document.getElementById('orderBanner').classList.add('hidden');
+
+            try {
+                for (let round = 0; round < DRAW_ANIMATION_ROUNDS; round++) {
+                    for (let teamIndex = 0; teamIndex < teams.length; teamIndex++) {
+                        document.querySelectorAll('.team-card.draw-highlight').forEach(card => card.classList.remove('draw-highlight'));
+                        const teamCard = document.getElementById('teamsGrid').children[teamIndex];
+                        teamCard?.classList.add('draw-highlight');
+                        turnText.innerText = teams[teamIndex].name;
+                        turnCounter.innerText = `${teamIndex + 1}/${teams.length}`;
+                        await wait(DRAW_STEP_DELAY_MS);
+                    }
+                }
+
+                draftOrder = shuffleTeamIndices();
+                currentTurnIndex = 0;
+                saveDraftState();
+                renderOrderBanner();
+                atualizarIndicadorTurno();
+                renderTeams();
+                showDrawNotice(`A ordem foi sorteada! Primeiro pick: ${teams[draftOrder[0]].name}.`);
+            } catch (error) {
+                console.error('Não foi possível concluir o sorteio da ordem.', error);
+                renderDraft();
+                alert('Não foi possível concluir o sorteio. Tente novamente.');
+            } finally {
+                isDrawingOrder = false;
+                sortButton.disabled = false;
+                sortButton.removeAttribute('aria-busy');
+                overlay.classList.add('hidden');
+            }
         }
 
         function renderOrderBanner() {
