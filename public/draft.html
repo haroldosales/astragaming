@@ -185,31 +185,23 @@
             box-shadow: 0 0 14px rgb(var(--brand-primary-rgb) / 22%);
         }
         .draft-brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
-        .draft-header-actions { gap: .5rem; }
-        .draft-button { min-height: 2.5rem; }
+        .draft-header-actions { order: 2; width: auto; justify-content: flex-start; gap: .5rem; margin-left: auto; }
+        .draft-header-brand { order: 1; display: flex; align-items: center; gap: .65rem; margin-left: 0; }
+        .draft-header-brand h1 { margin: 0; text-align: left; }
+        .draft-header-brand small { display: block; margin-top: .2rem; color: #a7a1b0; font: 500 .55rem/1.2 "IBM Plex Mono", monospace; letter-spacing: .12em; }
+        .draft-button { min-height: 2.25rem; }
         .draft-ui-icon { width: 1.05rem; height: 1.05rem; flex: 0 0 1.05rem; }
         .draft-header .draft-button { padding-inline: .8rem; }
-        .header-settings-menu { position: relative; }
-        .header-settings-menu > summary {
-            display: flex;
-            min-height: 2.5rem;
-            align-items: center;
-            justify-content: center;
-            gap: .45rem;
-            padding: .5rem .75rem;
-            border: 1px solid #373342;
-            border-radius: .35rem;
-            background: #1c1a23;
-            color: #d3cfda;
-            cursor: pointer;
-            font-size: .72rem;
-            font-weight: 700;
-            list-style: none;
-        }
-        .header-settings-menu > summary::-webkit-details-marker { display: none; }
-        .header-settings-menu > summary:hover, .header-settings-menu[open] > summary { border-color: #514b5a; color: white; }
-        .header-settings-menu > summary svg { width: 1rem; height: 1rem; }
-        .header-settings-popover { top: calc(100% + .4rem); width: 12rem; }
+        .draft-header #turnIndicator { display: flex; min-height: 2.25rem; gap: .55rem; padding: .4rem .7rem; border-color: rgb(var(--brand-primary-rgb) / 55%); border-radius: .3rem; font-size: .68rem; }
+        .draft-header #turnCounterBadge { margin-left: .1rem; }
+        .draft-header .draft-button { border-radius: .3rem; font-family: "Orbitron", sans-serif; font-size: .72rem; letter-spacing: .04em; }
+        .draft-header #btnSortear { min-width: 11.25rem; justify-content: center; }
+        .draft-header #btnNextTurn { min-width: 7rem; justify-content: center; background: #8429d7; }
+        .draft-header #btnNextTurn:hover { background: #7221bf; }
+        .draft-header-icon-button { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 2.25rem; place-items: center; padding: 0; border: 1px solid #373d4c; border-radius: .3rem; background: #1d2735; color: #d5dce7; cursor: pointer; transition: border-color .15s, color .15s, background-color .15s; }
+        .draft-header-icon-button:hover { border-color: rgb(var(--brand-primary-rgb) / 65%); background: #252e3d; color: white; }
+        .draft-header-icon-button svg { width: 1rem; height: 1rem; }
+        .draft-header-icon-button.settings { color: rgb(var(--brand-primary-rgb)); }
         .draft-main { align-items: start; gap: 1rem; }
         .player-sidebar {
             height: min(760px, calc(100vh - 112px));
@@ -345,14 +337,16 @@
         .draft-footer kbd { color: #d9b8cb; }
         @media (max-width: 1023px) {
             .draft-header { position: static; }
+            .draft-header-brand h1 { display: none; }
             .player-sidebar { height: min(560px, 70vh); min-height: 360px; }
             .player-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
         @media (max-width: 640px) {
             .draft-header { align-items: flex-start; padding-inline: .85rem; }
             .draft-header h1 { font-size: 1rem; }
-            .draft-header-actions { justify-content: flex-start; width: 100%; }
-            .draft-header-actions button, .header-settings-menu > summary { min-height: 2.6rem; }
+            .draft-header-actions { width: 100%; justify-content: flex-end; flex-wrap: nowrap; overflow-x: auto; padding-bottom: .15rem; }
+            .draft-header #turnIndicator { flex: 0 0 auto; }
+            .draft-header .draft-button { flex: 0 0 auto; }
             .draft-main { padding: .75rem; }
             .player-sidebar { height: 55vh; min-height: 320px; }
             .player-grid { grid-template-columns: minmax(0, 1fr) !important; }
@@ -369,30 +363,28 @@
 <body class="bg-brand-darkBg text-gray-100 font-body min-h-screen flex flex-col antialiased selection:bg-brand-pink selection:text-white">
 
     <!-- BARRA SUPERIOR (HEADER) -->
-    <header class="draft-header bg-brand-cardBg border-b-2 border-brand-pink px-4 lg:px-8 py-4 flex flex-wrap justify-between items-center shadow-lg gap-4">
-        <div class="flex items-center gap-3">
-            <div class="draft-brand-mark" aria-hidden="true"><img src="/AG.png" alt=""></div>
-            <h1 class="font-gamer text-xl lg:text-2xl font-extrabold tracking-wider text-white neon-text uppercase">
-                <span id="projectTitle">ASTRA GAMING</span> <span class="text-brand-pink">- DRAFT</span>
-                <small id="projectSubtitleDisplay" class="mt-1 block font-mono text-[9px] font-medium tracking-widest text-gray-400">DRAFT 2026</small>
-            </h1>
-        </div>
-
-        <!-- Controles do Header -->
-        <div class="draft-header-actions flex flex-wrap items-center gap-2 sm:gap-3">
-            <div id="turnIndicator" class="hidden items-center gap-2 bg-brand-panelBg px-3 py-1.5 rounded border border-brand-pink/40 text-xs font-semibold">
+    <header class="draft-header bg-brand-cardBg border-b-2 border-brand-pink px-4 lg:px-8 py-4 flex flex-wrap justify-between items-center shadow-lg gap-3">
+        <div class="draft-header-actions flex items-center">
+            <div id="turnIndicator" class="items-center bg-brand-panelBg text-xs font-semibold">
                 <span class="text-gray-400">VEZ DO PICK:</span>
                 <span id="currentTurnTeamText" class="text-brand-pink font-gamer font-bold uppercase">NENHUM</span>
                 <span id="turnCounterBadge" class="bg-brand-pink/20 text-brand-pink border border-brand-pink/50 text-[10px] px-1.5 py-0.5 rounded font-mono ml-1">1/8</span>
             </div>
 
-            <button id="btnSortear" onclick="sortearOrdem()" class="draft-button bg-brand-pink hover:bg-brand-pinkDark text-white font-gamer font-bold px-4 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 shadow-md flex items-center gap-2">
-                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M4 7h16"/><path d="m8 21-4-4 4-4"/><path d="M20 17H4"/></svg> SORTEAR ORDEM
+            <button id="btnSortear" onclick="sortearOrdem()" class="draft-button bg-brand-pink hover:bg-brand-pinkDark text-white font-bold px-4 py-2 tracking-wider transition-all duration-200 shadow-md flex items-center gap-2">
+                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 4 4-4 4"/><path d="M4 7h16"/><path d="m8 21-4-4 4-4"/><path d="M20 17H4"/></svg> SORTEAR ORDEM
             </button>
-            <button id="btnNextTurn" onclick="proximoTurno()" class="draft-button bg-brand-accent hover:brightness-90 text-white font-gamer font-bold px-3 py-2 rounded text-xs sm:text-sm tracking-wider transition-all duration-200 flex items-center gap-1.5">
-                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> <span id="nextTurnButtonLabel">SORTEAR E INICIAR</span>
+            <button id="btnNextTurn" onclick="proximoTurno()" class="draft-button text-white font-bold px-3 py-2 tracking-wider transition-all duration-200 flex items-center gap-1.5">
+                <svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 5 7 7-7 7"/><path d="m12 5 7 7-7 7"/></svg> <span id="nextTurnButtonLabel">PRÓXIMO</span>
             </button>
-            <details id="headerSettingsMenu" class="header-settings-menu">
+            <button type="button" class="draft-header-icon-button settings" onclick="openProjectSettings()" title="Editar projeto" aria-label="Editar projeto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.7 6.3 3 3"/><path d="M4 20l4.8-1 10.1-10.1a2.1 2.1 0 0 0-3-3L5.8 16 4 20Z"/><path d="m12 8 4 4"/></svg>
+            </button>
+            <button type="button" class="draft-header-icon-button" onclick="resetDraft()" title="Limpar picks" aria-label="Limpar picks">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 1 1-2.3-5.7L20 9"/></svg>
+            </button>
+            <template>
+                <details>
                 <summary aria-label="Abrir menu de configurações" title="Configurações">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.6 2.8-.2-.1a1.7 1.7 0 0 0-1.9.3l-.2.2h-3.2l-.1-.2a1.7 1.7 0 0 0-1.9-.3l-.2.1-1.6-2.8.1-.1a1.7 1.7 0 0 0 .3-1.9l-.1-.2v-3.2l.1-.1a1.7 1.7 0 0 0-.3-1.9l-.1-.2 1.6-2.8.2.1a1.7 1.7 0 0 0 1.9-.3l.1-.2h3.2l.2.2a1.7 1.7 0 0 0 1.9.3l.2-.1 1.6 2.8-.1.2a1.7 1.7 0 0 0-.3 1.9l.1.1v3.2z"/></svg>
                     <span class="hidden sm:inline">MENU</span>
@@ -401,7 +393,15 @@
                     <button type="button" onclick="openProjectSettings()"><svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg> Editar projeto</button>
                     <button type="button" onclick="resetDraft()"><svg class="draft-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg> Limpar picks</button>
                 </div>
-            </details>
+                </details>
+            </template>
+        </div>
+        <div class="draft-header-brand">
+            <h1 class="font-gamer font-extrabold tracking-wider text-white neon-text uppercase">
+                <span id="projectTitle">ASTRA GAMING</span> <span class="text-brand-pink">- DRAFT</span>
+                <small id="projectSubtitleDisplay">DRAFT 2026</small>
+            </h1>
+            <div class="draft-brand-mark" aria-hidden="true"><img src="/AG.png" alt=""></div>
         </div>
     </header>
 
@@ -479,7 +479,7 @@
                 <button id="roleManagerToggle" type="button" onclick="toggleRoleManager()" class="role-manager-gear" title="Gerenciar funções e ícones" aria-label="Gerenciar funções e ícones" aria-pressed="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)"/></svg>
                 </button>
-                <button id="removePlayerRoleButton" type="button" onclick="setPlayerRole(null)" class="ml-auto border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Remover função</button>
+                <button id="removePlayerRoleButton" type="button" onclick="setPlayerRole(null)" class="ml-auto border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Sortear outro ícone</button>
             </div>
         </div>
     </dialog>
@@ -721,6 +721,25 @@
             return typeof value === 'string' && roleCatalog.some(role => role.id === value);
         }
 
+        function getRandomRoleId(excludedRoleId = null) {
+            const alternatives = roleCatalog.filter(role => role.id !== excludedRoleId);
+            const choices = alternatives.length > 0 ? alternatives : roleCatalog;
+            if (choices.length === 0) return null;
+            return choices[Math.floor(Math.random() * choices.length)].id;
+        }
+
+        function assignRandomRolesToUnassignedPlayers() {
+            let assignedAny = false;
+            getAllPlayerNicks().forEach(nick => {
+                if (isPlayerRole(playerRoles[nick])) return;
+                const roleId = getRandomRoleId();
+                if (!roleId) return;
+                playerRoles[nick] = roleId;
+                assignedAny = true;
+            });
+            return assignedAny;
+        }
+
         function normalizePlayerRoles(value) {
             const roles = Object.create(null);
             if (!value || typeof value !== 'object' || Array.isArray(value)) return roles;
@@ -776,8 +795,6 @@
         }
 
         function applyProjectDetails() {
-            document.getElementById('projectTitle').innerText = project.tournament.toUpperCase();
-            document.getElementById('projectSubtitleDisplay').innerText = project.subtitle.toUpperCase();
             document.getElementById('footerProjectName').innerText = project.name.toUpperCase();
             document.getElementById('footerProjectSubtitle').innerText = project.subtitle.toUpperCase();
             document.title = `${project.tournament} - ${project.subtitle}`;
@@ -836,6 +853,7 @@
                 playerRoles = normalizePlayerRoles(defaults.playerRoles);
             }
 
+            if (assignRandomRolesToUnassignedPlayers()) saveDraftState();
             applyProjectDetails();
             renderDraft();
             setupKeyboardShortcuts();
@@ -857,7 +875,6 @@
         });
 
         function openProjectSettings() {
-            document.getElementById('headerSettingsMenu').open = false;
             document.getElementById('projectNameInput').value = project.name;
             document.getElementById('tournamentNameInput').value = project.tournament;
             document.getElementById('projectSubtitleInput').value = project.subtitle;
@@ -1029,7 +1046,11 @@
             if (!confirm(`Excluir a função “${role.name}”?${assignmentMessage}`)) return;
             roleCatalog = roleCatalog.filter(item => item.id !== role.id);
             Object.keys(playerRoles).forEach(nick => {
-                if (playerRoles[nick] === role.id) delete playerRoles[nick];
+                if (playerRoles[nick] === role.id) {
+                    const replacementRole = getRandomRoleId();
+                    if (replacementRole) playerRoles[nick] = replacementRole;
+                    else delete playerRoles[nick];
+                }
             });
             selectedRoleId = null;
             saveDraftState();
@@ -1042,8 +1063,13 @@
             const nick = editingPlayerRoleNick;
             if (!nick || !getAllPlayerNicks().includes(nick)) return;
             if (role !== null && !isPlayerRole(role)) return;
-            if (role === null) delete playerRoles[nick];
-            else playerRoles[nick] = role;
+            if (role === null) {
+                const randomRole = getRandomRoleId(playerRoles[nick]);
+                if (randomRole) playerRoles[nick] = randomRole;
+                else delete playerRoles[nick];
+            } else {
+                playerRoles[nick] = role;
+            }
             closePlayerRoleDialog();
             saveDraftState();
             renderDraft();
@@ -1182,6 +1208,8 @@
             
             if (nick && !getAllPlayerNicks().some(player => player.toLowerCase() === nick.toLowerCase())) {
                 availablePlayers.unshift(nick);
+                const randomRole = getRandomRoleId();
+                if (randomRole) playerRoles[nick] = randomRole;
                 input.value = '';
                 saveDraftState();
                 renderDraft();
@@ -1506,17 +1534,15 @@
             const turnText = document.getElementById('currentTurnTeamText');
             const turnCounter = document.getElementById('turnCounterBadge');
             const nextTurnLabel = document.getElementById('nextTurnButtonLabel');
-            nextTurnLabel.innerText = draftOrder.length > 0 ? 'PRÓXIMA EQUIPE' : 'SORTEAR E INICIAR';
+            nextTurnLabel.innerText = 'PRÓXIMO';
 
             if (draftOrder.length > 0 && currentTurnIndex >= 0) {
                 const currentTeam = teams[draftOrder[currentTurnIndex]];
-                turnIndicator.classList.remove('hidden');
-                turnIndicator.classList.add('flex');
                 turnText.innerText = currentTeam.name;
                 turnCounter.innerText = `${currentTurnIndex + 1}/${teams.length}`;
             } else {
-                turnIndicator.classList.add('hidden');
-                turnIndicator.classList.remove('flex');
+                turnText.innerText = 'NENHUM';
+                turnCounter.innerText = `${teams.length ? 1 : 0}/${teams.length}`;
             }
         }
 
